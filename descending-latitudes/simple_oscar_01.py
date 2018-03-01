@@ -74,9 +74,12 @@ if particle:
 
     if plot:
         pset.show(field=fieldset.U,
-                  land=True,
                   particles=False,
-                  savefile=exportname+"_0"
+                  savefile=exportname+"_0U"
+                  )
+        pset.show(field=fieldset.V,
+                  particles=False,
+                  savefile=exportname+"_0V"
                   )
         pset.show(field='vector',
                   land=True,

@@ -96,21 +96,21 @@ if particle:
 
     pset.execute(AdvectionRK4,
                  runtime=timedelta(days=1),
-                 dt=timedelta(minutes=30),
-                 # recovery={ErrorCode.ErrorOutOfBounds: DeleteParticle}
+                 dt=timedelta(minutes=30)
                  )
 
     if plot:
         pset.show(field=fieldset.U,
-                  land=True,
                   particles=False,
-                  #domain=dom,
-                  savefile=exportname+"_0"
+                  savefile=exportname+"_0U"
+                  )
+        pset.show(field=fieldset.V,
+                  particles=False,
+                  savefile=exportname+"_0V"
                   )
         pset.show(field='vector',
                   land=True,
                   particles=False,
-                  #domain=dom,
                   vmax=3,
                   savefile=exportname+"_1"
                   )
