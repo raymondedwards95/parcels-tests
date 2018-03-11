@@ -63,8 +63,8 @@ def getVelocity(fieldset, coords, radius=0, step=1):
 
     for i in range(res):
         for j in range(res):
-            U[i][j] = fieldset.U.eval(time, lons[i], lats[j], depth)
-            V[i][j] = fieldset.V.eval(time, lons[i], lats[j], depth)
+            U[j][i] = fieldset.U.eval(time, lons[i], lats[j], depth)
+            V[j][i] = fieldset.V.eval(time, lons[i], lats[j], depth)
 
     return [U, V, lons, lats]
 
@@ -96,7 +96,7 @@ def absoluteVelocity(vector):
     return [vel, lon, lat]
 
 
-def plotAbsoluteVelocity(vector, savefile=None):
+def plotAbsoluteVelocity(vector, savefile=None, vmax=3):
     """ Plot results of absoluteVelocity() """
     if len(vector) == 3:
         vel = vector[0]
@@ -108,7 +108,7 @@ def plotAbsoluteVelocity(vector, savefile=None):
         print "vector not in correct shape"
         return
     plt.figure()
-    plt.contourf(lon, lat, vel)
+    plt.contourf(lon, lat, vel, vmin=0, vmax=vmax)
     plt.plot(plon, plat)
     plt.xlabel("longitude")
     plt.ylabel("latitude")
@@ -117,6 +117,63 @@ def plotAbsoluteVelocity(vector, savefile=None):
         plt.show()
     else:
         plt.savefig(savefile)
+
+
+def getGridPoints(fieldset, coords, radius=1):
+    """ Return the closest grid points (lon, lat) """
+    if np.size(coords) == 4:
+        lon, lat = coords[0][1], coords[0][2]
+        time, depth = coords[0][0], coords[0][3]
+    else:
+        print "coords not in correct shape"
+        return
+
+    grid_lon = fieldset.U.grid.lon
+    grid_lat = fieldset.U.grid.lat
+
+    if lon < np.min(grid_lon) or lon > np.max(grid_lon):
+        print "Longitude in not in the domain"
+        return
+    if lat < np.min(grid_lat) or lat > np.max(grid_lat):
+        print "Latitude in not in the domain"
+        return
+
+    for i in range(np.size(grid_lon)-1):
+        if lon < grid_lon[i]:
+            lon_0 = grid_lon[i-1]
+            lon_1 = grid_lon[i]
+            x_0 = i-1
+            x_1 = i
+            break
+    for j in range(np.size(grid_lat)-1):
+        if lat < grid_lat[j]:
+            lat_0 = grid_lat[j-1]
+            lat_1 = grid_lat[j]
+            y_0 = j-1
+            y_1 = j
+            break
+
+    lons = [lon_0, lon_1]
+    lats = [lat_0, lat_1]
+    xs = [x_0, x_1]
+    ys = [y_0, y_1]
+
+    return [lons, lats, xs, ys]
+
+
+def getGridVelocity(fieldset, vector):
+    """ Use results from getGridPoints() to find velocities on given points """
+    [lons, lats, xs, ys] = vector
+
+    u = np.zeros((2, 2))
+    v = np.zeros((2, 2))
+
+    for i in range(2):
+        for j in range(2):
+            u[i][j] = fieldset.U.data[0, ys[i], xs[j]]
+            v[i][j] = fieldset.V.data[0, ys[i], xs[j]]
+
+    return [u, v, lons, lats]
 
 
 def main():
