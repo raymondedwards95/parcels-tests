@@ -122,22 +122,28 @@ def absoluteVelocity(vector):
     return [vel, lons, lats, depth, time]
 
 
-def plotAbsoluteVelocity(vector, savefile=None, vmax=None):
+def plotAbsoluteVelocity(vector, coords=None, savefile=None, vmax=None):
     """ Plot results of absoluteVelocity() """
     if len(vector) == 5:
         [vel, lons, lats, depth, time] = vector
-        plon = lons[len(lons)/2]
-        plat = lats[len(lats)/2]
     else:
         print "plotAbsoluteVelocity(): vector not in correct shape"
         return
 
+    if coords is not None and np.size(coords) == 4:
+        [time, lon, lat, depth] = coords
+        plon, plat = lon, lat
+    else:
+        plon = lons[len(lons)/2]
+        plat = lats[len(lats)/2]
+
     plt.figure()
     plt.contourf(lons, lats, vel, vmin=0, vmax=vmax)
-    plt.plot(plon, plat)
+    plt.plot(plon, plat, 'ro')
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.colorbar()
+    plt.grid()
     if savefile is None:
         plt.show()
     else:
