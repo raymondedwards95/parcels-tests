@@ -10,6 +10,7 @@ def DeleteParticle(particle, fieldset, time, dt):
     p.delete()
     print "ErrorOutOfBounds --> Delete Particle {} at ({}, {})".format(p.id, p.lon, p.lat)
 
+
 def particleCoords(particleset, identification=None):
     """ returns an array with time, lon, lat and depth of
     particles in the particleset with ids in the list
@@ -28,6 +29,7 @@ def particleCoords(particleset, identification=None):
                 coords.append([p.time, p.lon, p.lat, p.depth])
         return np.array(coords)
     return np.array(coords)
+
 
 def getVelocity(fieldset, coords, radius=0, step=1):
     """ return U, V for lons and lats close to given coords with
@@ -121,6 +123,8 @@ def plotAbsoluteVelocity(vector, savefile=None, vmax=3):
 
 def getGridPoints(fieldset, coords, radius=1):
     """ Return the closest grid points (lon, lat) """
+    radius = int(radius)
+
     if np.size(coords) == 4:
         lon, lat = coords[0][1], coords[0][2]
         time, depth = coords[0][0], coords[0][3]
@@ -138,40 +142,76 @@ def getGridPoints(fieldset, coords, radius=1):
         print "Latitude in not in the domain"
         return
 
+    lons = []
+    lats = []
+    xs = []
+    ys = []
+
     for i in range(np.size(grid_lon)-1):
         if lon < grid_lon[i]:
-            lon_0 = grid_lon[i-1]
-            lon_1 = grid_lon[i]
-            x_0 = i-1
-            x_1 = i
-            break
-    for j in range(np.size(grid_lat)-1):
-        if lat < grid_lat[j]:
-            lat_0 = grid_lat[j-1]
-            lat_1 = grid_lat[j]
-            y_0 = j-1
-            y_1 = j
+            for ii in range(radius):
+                lons.append(grid_lon[i-ii-1])
+                lons.append(grid_lon[i+ii])
+                xs.append(i-ii-1)
+                xs.append(i+ii)
             break
 
-    lons = [lon_0, lon_1]
-    lats = [lat_0, lat_1]
-    xs = [x_0, x_1]
-    ys = [y_0, y_1]
+    for j in range(np.size(grid_lat)-1):
+        if lat < grid_lat[j]:
+            for jj in range(radius):
+                lats.append(grid_lat[j-jj-1])
+                lats.append(grid_lat[j+jj])
+                ys.append(j-jj-1)
+                ys.append(j+jj)
+            break
+
+    if np.all(lons[:-1] <= lons[1:]):
+        lons.sort()
+    if np.all(lats[:-1] > lats[1:]):
+        lats.sort(reverse=True)
+    if np.all(xs[:-1] <= xs[1:]):
+        xs.sort()
+    if np.all(ys[:-1] > ys[1:]):
+        ys.sort(reverse=True)
 
     return [lons, lats, xs, ys]
 
 
-def getGridVelocity(fieldset, vector):
-    """ Use results from getGridPoints() to find velocities on given points """
-    [lons, lats, xs, ys] = vector
+def getGridVelocity(fieldset, vector, method="data"):
+    """ Use results from getGridPoints() to find velocities on given points
+    method="data" or method="eval"
+    """
+    if len(vector) == 4:
+        [lons, lats, xs, ys] = vector
+    else:
+        print "vector not in correct shape"
 
-    u = np.zeros((2, 2))
-    v = np.zeros((2, 2))
+    res0 = np.size(lons)
+    res1 = np.size(lats)
+    res2 = np.size(xs)
+    res3 = np.size(ys)
+    if res0 == res1 == res2 == res3:
+        res = res0
+    else:
+        print "Grid is not square, i.e. len(lons) != len(lats)"
+        return
 
-    for i in range(2):
-        for j in range(2):
-            u[i][j] = fieldset.U.data[0, ys[i], xs[j]]
-            v[i][j] = fieldset.V.data[0, ys[i], xs[j]]
+    u = np.zeros((res, res))
+    v = np.zeros((res, res))
+
+    if method == "data":
+        for i in range(res):
+            for j in range(res):
+                u[i][j] = fieldset.U.data[0, ys[i], xs[j]]
+                v[i][j] = fieldset.V.data[0, ys[i], xs[j]]
+    # elif method == "eval":
+    #     for i in range(res):
+    #         for j in range(res):
+    #             U[i][j] = fieldset.U.eval(time, lats[j], lons[i], depth)
+    #             V[i][j] = fieldset.V.eval(time, lats[j], lons[i], depth)
+    else:
+        print "method not found, use \"data\" or \"eval\"."
+        return
 
     return [u, v, lons, lats]
 
