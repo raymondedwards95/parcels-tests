@@ -13,46 +13,71 @@ def DeleteParticle(particle, fieldset, time, dt):
 
 def particleCoords(particleset, identification=None):
     """ returns an array with time, lon, lat and depth of
-    particles in the particleset with ids in the list
-    identification.
+    particles in the particleset with ids in
+    identification (int, list or None).
     """
-    coords = []
+    times = []
+    lons = []
+    lats = []
+    depths = []
+
     if identification == None:
         for i in range(len(particleset)):
             p = particleset[i]
-            coords.append([p.time, p.lon, p.lat, p.depth])
-        return np.array(coords)
+            times.append(p.time)
+            lons.append(p.lon)
+            lats.append(p.lat)
+            depths.append(p.depth)
+
+        return [times, lons, lats, depths]
+
+    if type(identification) == int:
+        for i in range(len(particleset)):
+            p = particleset[i]
+            if particleset[i].id == identification:
+                times = p.time
+                lons = p.lon
+                lats = p.lat
+                depths = p.depth
+
+                return [times, lons, lats, depths]
+
     if type(identification) == list:
         for i in range(len(particleset)):
             p = particleset[i]
             if particleset[i].id in identification:
-                coords.append([p.time, p.lon, p.lat, p.depth])
-        return np.array(coords)
-    return np.array(coords)
+                times.append(p.time)
+                lons.append(p.lon)
+                lats.append(p.lat)
+                depths.append(p.depth)
+
+        return [times, lons, lats, depths]
+
+    print "particleCoords(): 'indentification' is incorrect"
+    return [times, lons, lats, depths]
 
 
 def getVelocity(fieldset, coords, radius=0, step=1):
-    """ return U, V for lons and lats close to given coords with
+    """ return U, V for lons and lats close to given coords of one particle, with
     form (time, lon, lat, depth)
     radius and step is used to also
     get U, V at (lon,lat) +-step with step <= radius
     result is an array of size 1+2*radius/step
     """
     if np.size(coords) == 4:
-        lon, lat = coords[0][1], coords[0][2]
-        time, depth = coords[0][0], coords[0][3]
+        [time, lon, lat, depth] = coords
     else:
-        print "coords not in correct shape"
+        print "getVelocity(): coords not in correct shape"
         return
 
     if step == 0 and radius == 0:
-        print "* step and radius are 0, setting step to 1"
+        print "getVelocity(): step and radius are 0, setting step to 1"
         step = 1
     elif step == 0 and radius != 0:
-        print "* step is 0, setting step equal to radius,", radius
+        print "getVelocity(): step is 0, setting step equal to radius,", radius
         step = radius
     if step > radius and radius != 0:
-        print "* step is larger than radius, setting step equal to radius,", radius
+        print "getVelocity(): step is larger than radius, setting step equal to radius,", radius
         step = radius
 
     res = int(1+2*np.round(radius/step))
@@ -68,16 +93,15 @@ def getVelocity(fieldset, coords, radius=0, step=1):
             U[j][i] = fieldset.U.eval(time, lons[i], lats[j], depth)
             V[j][i] = fieldset.V.eval(time, lons[i], lats[j], depth)
 
-    return [U, V, lons, lats]
+    return [U, V, lons, lats, depth, time]
 
 
 def absoluteVelocity(vector):
-    """ Calculate absolute velocities from list [U, V, lon, lat]: (U^2 + v^2)^(1/2) """
-    if len(vector) == 4:
-        U, V = vector[0], vector[1]
-        lon, lat = vector[2], vector[3]
+    """ Calculate absolute velocities from list [U, V, lons, lats, time]: (U^2 + v^2)^(1/2) """
+    if len(vector) == 6:
+        [U, V, lons, lats, depth, time] = vector
     else:
-        print "vector not in correct shape"
+        print "absoluteVelocity(): vector not in correct shape"
 
     res0 = np.shape(U)[0]
     res1 = np.shape(U)[1]
@@ -86,7 +110,7 @@ def absoluteVelocity(vector):
     if res0 == res1 == res2 == res3:
         res = res0
     else:
-        print "U and V are not square or do not have the same shapes."
+        print "absoluteVelocity(): U and V are not square or do not have the same shapes."
         return
 
     vel = np.ones((res, res))
@@ -95,20 +119,19 @@ def absoluteVelocity(vector):
         for j in range(res):
             vel[i, j] = np.sqrt(np.power(U[i, j], 2) + np.power(V[i, j], 2))
 
-    return [vel, lon, lat]
+    return [vel, lons, lats, depth, time]
 
 
-def plotAbsoluteVelocity(vector, savefile=None, vmax=3):
+def plotAbsoluteVelocity(vector, savefile=None, vmax=None):
     """ Plot results of absoluteVelocity() """
-    if len(vector) == 3:
-        vel = vector[0]
-        lon = vector[1]
-        lat = vector[2]
+    if len(vector) == 5:
+        [vel, lon, lat, depth, time] = vector
         plon = lon[len(lon)/2]
         plat = lat[len(lat)/2]
     else:
-        print "vector not in correct shape"
+        print "plotAbsoluteVelocity(): vector not in correct shape"
         return
+
     plt.figure()
     plt.contourf(lon, lat, vel, vmin=0, vmax=vmax)
     plt.plot(plon, plat)
@@ -126,20 +149,19 @@ def getGridPoints(fieldset, coords, radius=1):
     radius = int(radius)
 
     if np.size(coords) == 4:
-        lon, lat = coords[0][1], coords[0][2]
-        time, depth = coords[0][0], coords[0][3]
+        [time, lon, lat, depth] = coords
     else:
-        print "coords not in correct shape"
         return
+        print "getGridPoints(): Arguments (coords) not in correct shape"
 
     grid_lon = fieldset.U.grid.lon
     grid_lat = fieldset.U.grid.lat
 
     if lon < np.min(grid_lon) or lon > np.max(grid_lon):
-        print "Longitude in not in the domain"
+        print "getGridPoints(): Longitude in not in the domain"
         return
     if lat < np.min(grid_lat) or lat > np.max(grid_lat):
-        print "Latitude in not in the domain"
+        print "getGridPoints(): Latitude in not in the domain"
         return
 
     lons = []
@@ -167,24 +189,24 @@ def getGridPoints(fieldset, coords, radius=1):
 
     if np.all(lons[:-1] <= lons[1:]):
         lons.sort()
-    if np.all(lats[:-1] > lats[1:]):
-        lats.sort(reverse=True)
+    if np.all(lats[:-1] <= lats[1:]):
+        lats.sort()
     if np.all(xs[:-1] <= xs[1:]):
         xs.sort()
-    if np.all(ys[:-1] > ys[1:]):
-        ys.sort(reverse=True)
+    if np.all(ys[:-1] <= ys[1:]):
+        ys.sort()
 
-    return [lons, lats, xs, ys]
+    return [lons, lats, xs, ys, depth, time]
 
 
 def getGridVelocity(fieldset, vector, method="data"):
     """ Use results from getGridPoints() to find velocities on given points
     method="data" or method="eval"
     """
-    if len(vector) == 4:
-        [lons, lats, xs, ys] = vector
+    if len(vector) == 6:
+        [lons, lats, xs, ys, depth, time] = vector
     else:
-        print "vector not in correct shape"
+        print "getGridVelocity(): vector not in correct shape"
 
     res0 = np.size(lons)
     res1 = np.size(lats)
@@ -193,7 +215,7 @@ def getGridVelocity(fieldset, vector, method="data"):
     if res0 == res1 == res2 == res3:
         res = res0
     else:
-        print "Grid is not square, i.e. len(lons) != len(lats)"
+        print "getGridVelocity(): Grid is not square, i.e. len(lons) != len(lats)"
         return
 
     u = np.zeros((res, res))
@@ -204,16 +226,16 @@ def getGridVelocity(fieldset, vector, method="data"):
             for j in range(res):
                 u[i][j] = fieldset.U.data[0, ys[i], xs[j]]
                 v[i][j] = fieldset.V.data[0, ys[i], xs[j]]
-    # elif method == "eval":
-    #     for i in range(res):
-    #         for j in range(res):
-    #             U[i][j] = fieldset.U.eval(time, lats[j], lons[i], depth)
-    #             V[i][j] = fieldset.V.eval(time, lats[j], lons[i], depth)
+    elif method == "eval":
+        for i in range(res):
+            for j in range(res):
+                u[j][i] = fieldset.U.eval(time, lons[i], lats[j], depth)
+                v[j][i] = fieldset.V.eval(time, lons[i], lats[j], depth)
     else:
-        print "method not found, use \"data\" or \"eval\"."
+        print "getGridVelocity(): method not found, use \"data\" or \"eval\"."
         return
 
-    return [u, v, lons, lats]
+    return [u, v, lons, lats, depth, time]
 
 
 def main():
