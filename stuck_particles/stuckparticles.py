@@ -125,15 +125,15 @@ def absoluteVelocity(vector):
 def plotAbsoluteVelocity(vector, savefile=None, vmax=None):
     """ Plot results of absoluteVelocity() """
     if len(vector) == 5:
-        [vel, lon, lat, depth, time] = vector
-        plon = lon[len(lon)/2]
-        plat = lat[len(lat)/2]
+        [vel, lons, lats, depth, time] = vector
+        plon = lons[len(lons)/2]
+        plat = lats[len(lats)/2]
     else:
         print "plotAbsoluteVelocity(): vector not in correct shape"
         return
 
     plt.figure()
-    plt.contourf(lon, lat, vel, vmin=0, vmax=vmax)
+    plt.contourf(lons, lats, vel, vmin=0, vmax=vmax)
     plt.plot(plon, plat)
     plt.xlabel("longitude")
     plt.ylabel("latitude")
@@ -240,6 +240,7 @@ def getGridVelocity(fieldset, vector, method="data"):
 
 def main():
     pass
+
 
 
 if __name__ == "__main__":
