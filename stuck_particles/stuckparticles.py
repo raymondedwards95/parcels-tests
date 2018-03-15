@@ -31,7 +31,7 @@ def particleCoords(particleset, identification=None):
 
         return [times, lons, lats, depths]
 
-    if type(identification) == int:
+    elif type(identification) == int:
         for i in range(len(particleset)):
             p = particleset[i]
             if particleset[i].id == identification:
@@ -42,7 +42,7 @@ def particleCoords(particleset, identification=None):
 
                 return [times, lons, lats, depths]
 
-    if type(identification) == list:
+    elif type(identification) == list:
         for i in range(len(particleset)):
             p = particleset[i]
             if particleset[i].id in identification:
@@ -53,8 +53,12 @@ def particleCoords(particleset, identification=None):
 
         return [times, lons, lats, depths]
 
-    print "particleCoords(): 'indentification' is incorrect"
-    return [times, lons, lats, depths]
+    else:
+        print "particleCoords(): 'indentification' (", identification, ") is incorrect"
+
+    print "particleCoords(): Something went wrong, returning data from first particle"
+    p = particleset[0]
+    return [p.time, p.lon, p.lat, p.depth]
 
 
 def getVelocity(fieldset, coords, radius=0, step=1):
@@ -67,7 +71,7 @@ def getVelocity(fieldset, coords, radius=0, step=1):
     if np.size(coords) == 4:
         [time, lon, lat, depth] = coords
     else:
-        print "getVelocity(): coords not in correct shape"
+        print "getVelocity(): coords not in correct shape. Expected 4, got", np.size(coords)
         return
 
     if step == 0 and radius == 0:
@@ -101,7 +105,7 @@ def absoluteVelocity(vector):
     if len(vector) == 6:
         [U, V, lons, lats, depth, time] = vector
     else:
-        print "absoluteVelocity(): vector not in correct shape"
+        print "absoluteVelocity(): vector not in correct shape. Expected 6, got", len(vector)
 
     res0 = np.shape(U)[0]
     res1 = np.shape(U)[1]
@@ -110,7 +114,7 @@ def absoluteVelocity(vector):
     if res0 == res1 == res2 == res3:
         res = res0
     else:
-        print "absoluteVelocity(): U and V are not square or do not have the same shapes."
+        print "absoluteVelocity(): U and V are not square or do not have the same shapes. Shapes of U and V are", np.shape(U), np.shape(V)
         return
 
     vel = np.ones((res, res))
@@ -127,7 +131,7 @@ def plotAbsoluteVelocity(vector, coords=None, savefile=None, vmax=None):
     if len(vector) == 5:
         [vel, lons, lats, depth, time] = vector
     else:
-        print "plotAbsoluteVelocity(): vector not in correct shape"
+        print "plotAbsoluteVelocity(): vector not in correct shape. Expected 5, got", len(vector)
         return
 
     if coords is not None and np.size(coords) == 4:
@@ -158,16 +162,16 @@ def getGridPoints(fieldset, coords, radius=1):
         [time, lon, lat, depth] = coords
     else:
         return
-        print "getGridPoints(): Arguments (coords) not in correct shape"
+        print "getGridPoints(): Arguments (coords) not in correct shape. Expected 4, got", np.size(coords)
 
     grid_lon = fieldset.U.grid.lon
     grid_lat = fieldset.U.grid.lat
 
     if lon < np.min(grid_lon) or lon > np.max(grid_lon):
-        print "getGridPoints(): Longitude in not in the domain"
+        print "getGridPoints(): Longitude in not in the domain. {} is not between {} and {}.".format(lon, np.min(grid_lon), np.max(grid_lon))
         return
     if lat < np.min(grid_lat) or lat > np.max(grid_lat):
-        print "getGridPoints(): Latitude in not in the domain"
+        print "getGridPoints(): Latitude in not in the domain. {} is not between {} and {}.".format(lat, np.min(grid_lat), np.max(grid_lat))
         return
 
     lons = []
@@ -212,7 +216,7 @@ def getGridVelocity(fieldset, vector, method="data"):
     if len(vector) == 6:
         [lons, lats, xs, ys, depth, time] = vector
     else:
-        print "getGridVelocity(): vector not in correct shape"
+        print "getGridVelocity(): vector not in correct shape. Expected 6, got", len(vector)
 
     res0 = np.size(lons)
     res1 = np.size(lats)
