@@ -126,6 +126,48 @@ def absoluteVelocity(vector):
     return [vel, lons, lats, depth, time]
 
 
+def plotVelocity(vector, field="U", coords=None, savefile=None, vmax=None):
+    """ plot results of getVelocity() """
+    if len(vector) == 6:
+        [U, V, lons, lats, depth, time] = vector
+    else:
+        print "plotVelocity(): vector not in correct shape. Expected 6, got", len(vector)
+        return
+
+    if coords is not None and np.size(coords) == 4:
+        [time, lon, lat, depth] = coords
+        plon, plat = lon, lat
+    else:
+        plon = lons[len(lons)/2]
+        plat = lats[len(lats)/2]
+
+    if field == "U":
+        vel = U
+    elif field == "V":
+        vel = V
+    else:
+        print "plotVelocity(): parameter 'field' is incorrect. Expected 'U' or 'V'"
+
+    if vmax is not None and type(vmax) == float:
+        vmin = -vmax
+    else:
+        vmin = None
+        vmin = None
+
+    plt.figure()
+    plt.contourf(lons, lats, vel, vmin=vmin, vmax=vmax)
+    plt.plot(plon, plat, 'ro')
+    plt.xlabel("longitude")
+    plt.ylabel("latitude")
+    plt.colorbar()
+    plt.grid()
+    if savefile is None:
+        plt.show()
+    else:
+        plt.savefig(savefile)
+
+
+
 def plotAbsoluteVelocity(vector, coords=None, savefile=None, vmax=None):
     """ Plot results of absoluteVelocity() """
     if len(vector) == 5:
