@@ -149,6 +149,8 @@ def plotVelocity(vector, field="U", coords=None, show=None, savefile=None, vmax=
         plon = lons[len(lons)/2]
         plat = lats[len(lats)/2]
 
+    mesh_x, mesh_y = np.meshgrid(lons, lats)
+
     if field == "U":
         vel = U
     elif field == "V":
@@ -169,7 +171,8 @@ def plotVelocity(vector, field="U", coords=None, show=None, savefile=None, vmax=
 
     plt.figure()
     plt.contourf(lons, lats, vel, vmin=vmin, vmax=vmax)
-    plt.plot(plon, plat, 'ro')
+    plt.plot(plon, plat, 'o', markersize=5, color="red")
+    plt.plot(mesh_x.flatten(), mesh_y.flatten(), 'o', markersize=3, color="black")
     plt.title("field {} at t={}".format(field, time))
     plt.xlabel("longitude")
     plt.ylabel("latitude")
@@ -202,6 +205,8 @@ def plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=Non
         plon = lons[len(lons)/2]
         plat = lats[len(lats)/2]
 
+    mesh_x, mesh_y = np.meshgrid(lons, lats)
+
     if math.isnan(time):
         # at the start, time is nan,
         # so this is an ad-hoc solution
@@ -209,7 +214,8 @@ def plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=Non
 
     plt.figure()
     plt.contourf(lons, lats, vel, vmin=0, vmax=vmax)
-    plt.plot(plon, plat, 'ro')
+    plt.plot(plon, plat, 'o', markersize=5, color="red")
+    plt.plot(mesh_x.flatten(), mesh_y.flatten(), 'o', markersize=3, color="black")
     plt.title("absolute velocities at t={}".format(time))
     plt.xlabel("longitude")
     plt.ylabel("latitude")
@@ -266,9 +272,9 @@ def getGridPoints(fieldset, coords, radius=1):
 
     # could be optimized by checking if sort is needed
     lons.sort()
-    lats.sort()
+    lats.sort(reverse=True)
     xs.sort()
-    ys.sort()
+    ys.sort(reverse=True)
 
     return [lons, lats, xs, ys, depth, time]
 
