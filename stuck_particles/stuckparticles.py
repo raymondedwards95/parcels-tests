@@ -5,6 +5,9 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+from datetime import datetime
+
+
 def DeleteParticle(particle, fieldset, time, dt):
     p = particle
     p.delete()
@@ -126,8 +129,13 @@ def absoluteVelocity(vector):
     return [vel, lons, lats, depth, time]
 
 
-def plotVelocity(vector, field="U", coords=None, savefile=None, vmax=None):
+def plotVelocity(vector, field="U", coords=None, show=None, savefile=None, vmax=None):
     """ plot results of getVelocity() """
+    if savefile is None:
+        show = True
+    if show is None and savefile is not None:
+        show = False
+
     if len(vector) == 6:
         [U, V, lons, lats, depth, time] = vector
     else:
@@ -154,22 +162,33 @@ def plotVelocity(vector, field="U", coords=None, savefile=None, vmax=None):
         vmin = None
         vmin = None
 
+    if math.isnan(time):
+        # at the start, time is nan,
+        # so this is an ad-hoc solution
+        time = "start"
+
     plt.figure()
     plt.contourf(lons, lats, vel, vmin=vmin, vmax=vmax)
     plt.plot(plon, plat, 'ro')
+    plt.title("field {} at t={}".format(field, time))
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.colorbar()
     plt.grid()
-    if savefile is None:
+    if show:
         plt.show()
-    else:
+    if savefile is not None:
         plt.savefig(savefile)
 
 
 
-def plotAbsoluteVelocity(vector, coords=None, savefile=None, vmax=None):
+def plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=None):
     """ Plot results of absoluteVelocity() """
+    if savefile is None:
+        show = True
+    if show is None and savefile is not None:
+        show = False
+
     if len(vector) == 5:
         [vel, lons, lats, depth, time] = vector
     else:
@@ -183,16 +202,22 @@ def plotAbsoluteVelocity(vector, coords=None, savefile=None, vmax=None):
         plon = lons[len(lons)/2]
         plat = lats[len(lats)/2]
 
+    if math.isnan(time):
+        # at the start, time is nan,
+        # so this is an ad-hoc solution
+        time = "start"
+
     plt.figure()
     plt.contourf(lons, lats, vel, vmin=0, vmax=vmax)
     plt.plot(plon, plat, 'ro')
+    plt.title("absolute velocities at t={}".format(time))
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.colorbar()
     plt.grid()
-    if savefile is None:
+    if show:
         plt.show()
-    else:
+    if savefile is not None:
         plt.savefig(savefile)
 
 
@@ -239,14 +264,11 @@ def getGridPoints(fieldset, coords, radius=1):
                 ys.append(j+jj)
             break
 
-    if np.all(lons[:-1] <= lons[1:]):
-        lons.sort()
-    if np.all(lats[:-1] <= lats[1:]):
-        lats.sort()
-    if np.all(xs[:-1] <= xs[1:]):
-        xs.sort()
-    if np.all(ys[:-1] <= ys[1:]):
-        ys.sort()
+    # could be optimized by checking if sort is needed
+    lons.sort()
+    lats.sort()
+    xs.sort()
+    ys.sort()
 
     return [lons, lats, xs, ys, depth, time]
 
