@@ -1,3 +1,4 @@
+""" Functions for observing particles """
 from parcels import FieldSet, ParticleSet, Variable, JITParticle
 from parcels import AdvectionRK4, plotTrajectoriesFile, ErrorCode, ScipyParticle
 
@@ -12,6 +13,33 @@ def DeleteParticle(particle, fieldset, time, dt):
     p = particle
     p.delete()
     print "ErrorOutOfBounds --> Delete Particle {} at ({}, {})".format(p.id, p.lon, p.lat)
+
+
+def haversine(x, method=None):
+    """ default: use sin, otherwise use cos """
+    if method == "cos":
+        return (1. - np.cos(x)) / 2.
+    else:
+        return np.power(np.sin(x / 2.), 2.)
+
+
+def globalDistance(p1, p2):
+    """ calculate distance between two points on the earth, using haversine.
+    p1 = [lon1, lat1]
+    p2 = [lon2, lat2]
+    * in degrees
+
+    output = distance in m
+
+    see https://en.wikipedia.org/wiki/Haversine_formula
+    """
+    [lon1, lat1] = np.radians(p1)
+    [lon2, lat2] = np.radians(p2)
+
+    r = 6371000.
+
+    h = haversine(lat2 - lat1) + np.cos(lat1) * np.cos(lat2) * haversine(lon2 - lon1)
+    return 2. * r * np.arcsin(np.power(h, 1/2.))
 
 
 def particleCoords(particleset, identification=None):
@@ -32,9 +60,9 @@ def particleCoords(particleset, identification=None):
             lats.append(p.lat)
             depths.append(p.depth)
 
-        return [times, lons, lats, depths]
+        return np.transpose([times, lons, lats, depths]).tolist()
 
-    elif type(identification) == int:
+    elif isinstance(identification, (int, np.integer)):
         for i in range(len(particleset)):
             p = particleset[i]
             if particleset[i].id == identification:
@@ -45,7 +73,7 @@ def particleCoords(particleset, identification=None):
 
                 return [times, lons, lats, depths]
 
-    elif type(identification) == list:
+    elif isinstance(identification, (list)):
         for i in range(len(particleset)):
             p = particleset[i]
             if particleset[i].id in identification:
@@ -54,7 +82,7 @@ def particleCoords(particleset, identification=None):
                 lats.append(p.lat)
                 depths.append(p.depth)
 
-        return [times, lons, lats, depths]
+        return np.transpose([times, lons, lats, depths]).tolist()
 
     else:
         print "particleCoords(): 'indentification' (", identification, ") is incorrect"
