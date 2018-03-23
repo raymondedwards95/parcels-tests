@@ -346,6 +346,61 @@ def getGridVelocity(fieldset, vector, method="data"):
     return [u, v, lons, lats, depth, time]
 
 
+def calculateFlux(fieldset, vector):
+    """ check if fluid disappears by calculating fluxes using data from getGridVelocity()
+    """
+    if len(vector) == 6:
+        [u, v, lons, lats, depth, time] = vector
+    else:
+        print "checkContinuity(): vector not in correct shape. Expected 6, got", len(vector)
+
+    res0 = np.size(lons)
+    res1 = np.size(lats)
+    if res0 == res1:
+        res = res0
+    else:
+        print "checkContinuity(): Grid is not square, i.e. len(lons) != len(lats)"
+        return
+
+    if res == 2:
+        [lon_l, lon_r] = lons
+        [lat_u, lat_l] = lats
+    else:
+        half = int(np.round(res/2))
+        [lon_l, lon_r] = lons[half-1 : half+1]
+        [lat_u, lat_l] = lats[half-1 : half+1]
+        u = u[half-1 : half+1, half-1 : half+1]
+        v = v[half-1 : half+1, half-1 : half+1]
+
+    u = u.flatten()
+    v = v.flatten()
+
+    d_north = globalDistance([lon_l, lat_u], [lon_r, lat_u])
+    d_south = globalDistance([lon_l, lat_l], [lon_r, lat_l])
+    d_east = globalDistance([lon_r, lat_u], [lon_r, lat_l])
+    d_west = globalDistance([lon_l, lat_u], [lon_l, lat_l])
+
+    # using average velocities
+    v_north = 1/2 * (v[0] + v[1])
+    v_south = 1/2 * (v[2] + v[3])
+    u_east = 1/2 * (u[1] + u[3])
+    u_west = 1/2 * (u[0] + u[2])
+
+    f_north = d_north * v_north
+    f_south = d_south * v_south
+    f_east = d_east * u_east
+    f_west = d_west * u_west
+
+    return [f_north, f_south, f_east, f_west]
+
+
+def checkFlux(fluxes):
+    """ Check if total flux is close to 0 """
+    [f_north, f_south, f_east, f_west] = fluxes
+    return f_north - f_south + f_east - f_west <= np.power(10, -6)
+
+
+
 def main():
     pass
 
