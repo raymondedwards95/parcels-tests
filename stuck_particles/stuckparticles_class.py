@@ -6,7 +6,10 @@ import stuckparticles as st
 
 import numpy as np
 import math
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except:
+    return
 
 from datetime import timedelta, datetime
 from operator import attrgetter
