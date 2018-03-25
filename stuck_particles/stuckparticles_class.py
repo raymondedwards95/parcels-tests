@@ -34,14 +34,23 @@ class stuckParticle(JITParticle):
     * last_distance - last traveled distance
     * last_velocity - last velocity
 
+    * init_lon - initial longitude (does not change)
+    * init_lat - initial latitude (does not change)
+    * init_time - initial time (does not change)
+
     * prev_lon - previous longitude
     * prev_lat - previous latitude
     * prev_time - previous time
     """
     time_stuck = Variable('time_stuck', initial=0., dtype=np.float32)
+    time_moving = Variable('time_moving', initial=0., dtype=np.float32)
 
     last_distance = Variable('last_distance', dtype=np.float32, to_write=False, initial=0.)
     last_velocity = Variable('last_velocity', dtype=np.float32, to_write=False, initial=0.)
+
+    init_lon = Variable('init_lon', dtype=np.float32, to_write=True, initial=attrgetter('lon'))
+    init_lat = Variable('init_lat', dtype=np.float32, to_write=True, initial=attrgetter('lat'))
+    init_time = Variable('init_time', dtype=np.float32, to_write=True, initial=attrgetter('time'))
 
     prev_lon = Variable('prev_lon', dtype=np.float32, to_write=False, initial=attrgetter('lon'))
     prev_lat = Variable('prev_lat', dtype=np.float32, to_write=False, initial=attrgetter('lat'))
@@ -57,8 +66,9 @@ def checkVelocity(particle, fieldset, time, dt):
 
     for calculating distance we use haversine
     """
-    sleep_time = 0.#5.*24*60*60 # to ensure particles move at least a few days
+    sleep_time = 0.#5.*24*60*60 # to ensure particles move at least a few days, can also be done with time_threshold
     vel_threshold = math.pow(10., -3.)
+    time_threshold = 5.*24*60*60
 
     r = 6371000. # radius of Earth
 
@@ -81,31 +91,72 @@ def checkVelocity(particle, fieldset, time, dt):
         delta_time = dt
         particle.last_velocity = particle.last_distance / delta_time
 
+        # if particle.last_velocity < vel_threshold and particle.time_moving > time_threshold
         if particle.last_velocity < vel_threshold:
+            # i.e. particle velocity is lower than threshold
             particle.time_stuck += delta_time
         else:
+            particle.time_moving += delta_time
             if particle.time_stuck > 0:
                 particle.time_stuck = 0.
+
 
         particle.prev_time = particle.time
         particle.prev_lon = particle.lon
         particle.prev_lat = particle.lat
 
 
-def removeLandParticles(fieldset, particleset):
+def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
+    """ Export data per particle:
+    id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving
+
+    if velocities==True: also export
+    last gridvelocities
+    """
+    data = []
+    for particle in particleset:
+        sublist = np.array([particle.id,
+                            particle.lon,
+                            particle.lat,
+                            particle.time,
+                            particle.init_lon,
+                            particle.init_lat,
+                            particle.init_time,
+                            particle.time_stuck,
+                            particle.time_moving])
+        if velocities:
+            gridpoints = st.getGridPoints(fieldset, [particle.time, particle.lon, particle.lat, particle.depth])
+            sublist = np.append(sublist, st.getGridVelocity(fieldset, gridpoints))
+
+        data.append(sublist)
+
+    if savefile:
+        np.savez_compressed(savefile, data)
+    return data
+
+
+
+
+
+
+def removeLandParticles(fieldset, particleset, show=False):
     """ Remove particles that are on land.
     Particles on land are particles with velocities 0 at
     grid points around.
     """
     list_coords = st.particleCoords(particleset)
+    n = 0
     for i in range(np.shape(list_coords)[0]-1, 0, -1):
         gridpoints = st.getGridPoints(fieldset, list_coords[i])
         gridvelocity = st.getGridVelocity(fieldset, gridpoints)
 
         # check if all u and v are 0
         if not np.any(gridvelocity[0]) and not np.any(gridvelocity[1]):
-            print "removeLandParticles(): deleted particle", particleset[i].id
+            if show:
+                print "removeLandParticles(): deleted particle", particleset[i].id
             particleset.remove(i)
+            n = n + 1
+    print "removeLandParticles(): deleted {} particles".format(n)
 
     # for particle in particleset:
     #     coords = st.particleCoords(particleset, int(particle.id))
