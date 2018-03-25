@@ -102,3 +102,4 @@ ENV/
 *.png
 *.nc
 *.zip
+*.npz

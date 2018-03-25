@@ -91,6 +91,22 @@ def checkVelocity(particle, fieldset, time, dt):
         delta_time = dt
         particle.last_velocity = particle.last_distance / delta_time
 
+        ## NEW
+        # if particle.last_velocity < vel_threshold and particle.time_moving > time_threshold:
+        #     # i.e. particle velocity is lower than threshold
+        #     # and particle has moved for a certain time
+        #     particle.time_stuck += delta_time
+        # elif particle.last_velocity => vel_threshold
+        #     # particle is moving
+        #     particle.time_moving += delta_time
+        #     if particle.time_stuck > 0:
+        #         particle.time_stuck = 0.
+        # else:
+        #     # particle velocity is low and particle has not moved for a certain time
+        #     if particle.time_stuck > 0:
+        #         particle.time_stuck = 0.
+
+        ## OLD
         # if particle.last_velocity < vel_threshold and particle.time_moving > time_threshold
         if particle.last_velocity < vel_threshold:
             # i.e. particle velocity is lower than threshold
