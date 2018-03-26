@@ -7,7 +7,7 @@ import math
 try:
     import matplotlib.pyplot as plt
 except:
-    return
+    pass
 
 from datetime import datetime
 
@@ -349,7 +349,7 @@ def getGridVelocity(fieldset, vector, method="data"):
     return [u, v, lons, lats, depth, time]
 
 
-def calculateFlux(fieldset, vector):
+def calculateFlux(vector):
     """ check if fluid disappears by calculating fluxes using data from getGridVelocity()
     """
     if len(vector) == 6:

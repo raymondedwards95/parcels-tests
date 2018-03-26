@@ -100,7 +100,7 @@ pset.execute(
     AdvectionRK4 + k_velocity + k_boundary,
     runtime=timedelta(days=num_days),
     dt=timedelta(minutes=10),
-    output_file=pset.ParticleFile(name="st04/trajectory_04a", outputdt=timedelta(hours=3)),
+    output_file=pset.ParticleFile(name="trajectory_04_Global", outputdt=timedelta(hours=3)),
     recovery={ErrorCode.ErrorOutOfBounds: DeleteParticle}
 )
 print "Advection finished"

@@ -9,7 +9,7 @@ import math
 try:
     import matplotlib.pyplot as plt
 except:
-    return
+    pass
 
 from datetime import timedelta, datetime
 from operator import attrgetter
