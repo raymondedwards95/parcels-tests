@@ -400,7 +400,7 @@ def calculateFlux(vector):
 def checkFlux(fluxes):
     """ Check if total flux is close to 0 """
     [f_north, f_south, f_east, f_west] = fluxes
-    return f_north - f_south + f_east - f_west <= np.power(10, -6)
+    return f_north - f_south + f_east - f_west <= np.power(10., -6.)
 
 
 

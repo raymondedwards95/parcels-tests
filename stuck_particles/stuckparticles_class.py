@@ -47,6 +47,7 @@ class stuckParticle(JITParticle):
     """
     time_stuck = Variable('time_stuck', initial=0., dtype=np.float32)
     time_moving = Variable('time_moving', initial=0., dtype=np.float32)
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)
 
     last_distance = Variable('last_distance', dtype=np.float32, to_write=False, initial=0.)
     last_velocity = Variable('last_velocity', dtype=np.float32, to_write=False, initial=0.)
@@ -75,7 +76,7 @@ def checkVelocity(particle, fieldset, time, dt):
 
     r = 6371000. # radius of Earth
 
-    if time > sleep_time:
+    if particle.time_simulated > sleep_time:
         # prev_lon_r = math.radians(particle.prev_lon)
         # prev_lat_r = math.radians(particle.prev_lat)
         # lon_r = math.radians(particle.lon)
@@ -118,11 +119,13 @@ def checkVelocity(particle, fieldset, time, dt):
             particle.time_moving += delta_time
             if particle.time_stuck > 0:
                 particle.time_stuck = 0.
+                particle.time_moving = 0.
 
 
         particle.prev_time = particle.time
         particle.prev_lon = particle.lon
         particle.prev_lat = particle.lat
+    particle.time_simulated += dt
 
 
 def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
