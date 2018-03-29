@@ -31,15 +31,9 @@ def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
 
         data.append(sublist)
 
-    print "DEBUG1"
-    print type(data)
-    print data[0]
-
     if savefile:
-        print "DEBUG2"
         np.savez_compressed(savefile, data)
         print "Data saved in", savefile
-    print "DEBUG3"
     return data
 
 
