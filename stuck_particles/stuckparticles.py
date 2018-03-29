@@ -403,6 +403,36 @@ def checkFlux(fluxes):
     return f_north - f_south + f_east - f_west <= np.power(10., -6.)
 
 
+def checkField(fieldset, text=False):
+    """ Check if lons, lats are the same for different fields in fieldset """
+    if text:
+        print "\nFieldset contains the following fields:"
+        for i in range(len(fieldset.fields)):
+            print fieldset.fields[i].name
+
+    ulon = fieldset.U.grid.lon
+    ulat = fieldset.U.grid.lat
+    udep = fieldset.U.grid.depth
+    vlon = fieldset.V.grid.lon
+    vlat = fieldset.V.grid.lat
+    vdep = fieldset.V.grid.depth
+
+    if text:
+        if np.all(ulon == vlon):
+            print "longitudes are the same for U and V"
+        else:
+            print "longitudes are not the same for U and V. Note that not all functions will work as intended."
+        if np.all(ulat == vlat):
+            print "latitudes are the same for U and V"
+        else:
+            print "latitudes are not the same for U and V. Note that not all functions will work as intended."
+        if np.all(udep == vdep):
+            print "depths are the same for U and V"
+        else:
+            print "depths are not the same for U and V. Note that not all functions will work as intended."
+
+    return np.all(ulon == vlon) and np.all(ulat == vlat) and np.all(udep == vdep)
+
 
 def main():
     pass

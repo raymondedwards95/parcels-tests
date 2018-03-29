@@ -128,39 +128,6 @@ def checkVelocity(particle, fieldset, time, dt):
     particle.time_simulated += dt
 
 
-def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
-    """ Export data per particle:
-    id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving
-
-    if velocities==True: also export
-    last gridvelocities
-    """
-    data = []
-    for particle in particleset:
-        sublist = np.array([particle.id,
-                            particle.lon,
-                            particle.lat,
-                            particle.time,
-                            particle.init_lon,
-                            particle.init_lat,
-                            particle.init_time,
-                            particle.time_stuck,
-                            particle.time_moving])
-        if velocities:
-            gridpoints = st.getGridPoints(fieldset, [particle.time, particle.lon, particle.lat, particle.depth])
-            sublist = np.append(sublist, st.getGridVelocity(fieldset, gridpoints))
-
-        data.append(sublist)
-
-    if savefile:
-        np.savez_compressed(savefile, data)
-    return data
-
-
-
-
-
-
 def removeLandParticles(fieldset, particleset, show=False):
     """ Remove particles that are on land.
     Particles on land are particles with velocities 0 at
