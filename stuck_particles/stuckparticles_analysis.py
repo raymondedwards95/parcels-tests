@@ -112,7 +112,7 @@ def printLocations(subdata, initial=False):
 
 
 
-def plotLocations(subdata, title="", initial=False, show=None, savefile=None):
+def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfield=None, coastorigin="GlobCurrent", coasttype=np.bool):
     """ Plot locations of particles in subdata or data
     Assuming that the first three values are (id, lon, lat).
     """
@@ -124,6 +124,26 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None):
     if initial and subdata[0][-1] < 3:
         print "plotLocations(): not enough data."
         initial = False
+
+    if coastfield is not None:
+        if len(np.shape(coastfield)) == 3 and np.shape(coastfield)[0] == 2:
+            field = coastfield[0] + coastfield[1]
+        elif len(np.shape(coastfield)) == 2:
+            field = coastfield
+        else:
+            print "plotLocations(): coastfield not in correct form"
+            coastfield = None
+
+        field = field.astype(coasttype)
+
+        ny, nx = np.shape(field)
+        if coastorigin == "GlobCurrent":
+            lons = np.linspace(-181.125, 181.125, num=nx)
+            lats = np.linspace(-79.875, 79.875, num=ny)
+        else:
+            lons = np.arange(nx)
+            lats = np.arange(ny)
+
 
     colors = ["red", "blue", "green", "pink", "orange", "purple"]
     number = len(colors)
@@ -137,6 +157,10 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None):
         if initial and subdata[0][-1] > 2:
             plt.plot(subdata[i][5], subdata[i][6], "o", markersize=1, color=colors[m])
             plt.plot([subdata[i][1], subdata[i][5]], [subdata[i][2], subdata[i][6]], "--", color=colors[m])
+
+    if coastfield is not None:
+        plt.contourf(lons, lats, field, alpha=0.5, cmap="Greys")
+        # plt.colorbar()
 
     plt.grid()
     plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
@@ -178,3 +202,34 @@ def printGridVelocity(subdata, flux=False, index=None):
                 print "Flux on grid:"
                 print flux_numbers
                 print flux_check
+
+
+def plotHistogram(subdata, width=1, show=None, savefile=None):
+    """ Show number of stuck particles in a histogram. """
+    if savefile is None:
+        show = True
+    if show is None and savefile is not None:
+        show = False
+
+    if subdata[0][-1] < 2:
+        print "plotHistogram(): missing grid information."
+        return
+
+    list = []
+    for p in subdata:
+        list.append(p[3]/(24.*60.*60.))
+
+    n_bins = int(round((np.max(list) - np.min(list)) / width))
+
+    plt.figure()
+    plt.hist(list, n_bins, facecolor="green", alpha=0.75)
+    plt.xlabel("days stuck")
+    plt.ylabel("number of particles")
+    plt.title("")
+    plt.grid()
+
+    if show:
+        print "plotHistogram(): showing plot"
+        plt.show()
+    if savefile is not None:
+        plt.savefig(savefile)

@@ -9,11 +9,6 @@ import stuckparticles as st
 import stuckparticles_class as stc
 import stuckparticles_analysis as sta
 
-# try:
-#     from numba import vectorize, guvectorize
-# except:
-#     pass
-
 try:
     import matplotlib.pyplot as plt
 except:
@@ -42,7 +37,7 @@ def getIndicesGlobCurrent(lons, lats):
     return indices
 
 
-def getFieldsetGlobCurrent(filelocation, indices={}):
+def getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False):
     """ Create fieldset from GlobCurrent data """
     filenames = {"U": filelocation+"*.nc",
                  "V": filelocation+"*.nc"}
@@ -51,7 +46,7 @@ def getFieldsetGlobCurrent(filelocation, indices={}):
     dim = {"lat": "lat",
            "lon": "lon",
            "time": "time"}
-    fieldset = FieldSet.from_netcdf(filenames, variables=var, dimensions=dim, indices=indices)
+    fieldset = FieldSet.from_netcdf(filenames, variables=var, dimensions=dim, indices=indices, allow_time_extrapolation=time_extrapolation)
 
     print "getFieldsetGlobCurrent(): Success! Fieldset imported."
     return fieldset
@@ -173,8 +168,15 @@ def addGlobCurrentCoast(fieldset, coastfields):
     [field_coast_U, field_coast_V] = coastfields
     new_fieldset = fieldset
 
-    new_fieldset.U.data += field_coast_U
-    new_fieldset.U.data += field_coast_V
+    if np.shape(fieldset.U.data)[0] == np.shape(fieldset.V.data)[0]:
+        nt = np.shape(fieldset.U.data)[0]
+    else:
+        print "addGlobCurrentCoast(): fieldset.U.data and fieldset.V.data do not have the same shape."
+        return
+
+    for t in range(nt):
+        new_fieldset.U.data[t] += field_coast_U
+        new_fieldset.V.data[t] += field_coast_V
 
     return new_fieldset
 
@@ -211,8 +213,8 @@ def showCoast(fields, type=np.bool, origin="GlobCurrent", show=None, savefile=No
 
     ny, nx = np.shape(field)
     if origin == "GlobCurrent":
-        lons = np.linspace(0, 360, num=nx)
-        lats = np.linspace(-80, 80, num=ny)
+        lons = np.linspace(-181.125, 181.125, num=nx)
+        lats = np.linspace(-79.875, 79.875, num=ny)
     else:
         lons = np.arange(nx)
         lats = np.arange(ny)
@@ -225,13 +227,14 @@ def showCoast(fields, type=np.bool, origin="GlobCurrent", show=None, savefile=No
     plt.colorbar()
     plt.grid()
     if show:
+        print "showCoast(): showing plot"
         plt.show()
     if savefile is not None:
         plt.savefig(savefile)
 
 
 def main():
-    fset = getFieldsetGlobCurrent("GlobCurrent/")
+    fset = getFieldsetGlobCurrent("GlobCurrent/", time_extrapolation=True)
     coast_fields = createCoastVelocities(fset)
     exportCoastVelocities(coast_fields[0], coast_fields[1], "GlobCurrentCoast")
 
