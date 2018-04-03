@@ -50,9 +50,14 @@ def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False
     1 - simple (id, lon, lat)
     2 - basic (id, lon, lat, time_stuck, time_moving)
     3 - history (id, lon, lat, time_stuck, time_moving, init_lon, init_lat)
+    4 - gridinformation (id, lon, lat, time_stuck, time_moving, init_lon, init_lat, grid_u, grid_v, grid_lons, grid_lats, grid_depth, grid_time)
     """
     stuck_particles = 0
     free_particles = 0
+
+    if level == 0:
+        ## For compability, set level to max if level == 0
+        level = 4
 
     list = []
 
@@ -75,12 +80,36 @@ def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False
                     sublist.append(p[4])
                     sublist.append(p[5])
 
+                if level > 3:
+                    sublist.append(p[10])
+                    sublist.append(p[11])
+                    sublist.append(p[12])
+                    sublist.append(p[13])
+                    sublist.append(p[14])
+                    sublist.append(p[15])
+
                 sublist.append(level)
                 list.append(sublist)
 
     if text:
         print "Total number of particles: {}. {} are 'stuck', {} are 'free'.".format(len(data), stuck_particles, free_particles)
     return list
+
+
+def printLocations(subdata, initial=False):
+    """ Show initial and last location of particles in 'subdata' """
+    if initial and subdata[0][-1] < 3:
+        print "printLocations(): missing initial lon and lat."
+        initial = False
+
+    if initial:
+        for p in subdata:
+            print "Particle {:.0f}: Initial location ({:05.3f}, {:05.3f}) --> Last location ({:05.3f}, {:05.3f}).".format(p[0], p[5], p[6], p[1], p[2])
+
+    else:
+        for p in subdata:
+            print "Particle {:.0f}: Last location ({:05.3f}, {:05.3f}).".format(p[0], p[1], p[2])
+
 
 
 def plotLocations(subdata, title="", initial=False, show=None, savefile=None):
@@ -94,9 +123,9 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None):
 
     if initial and subdata[0][-1] < 3:
         print "plotLocations(): not enough data."
-        return
+        initial = False
 
-    colors = ["red", "blue", "green"]
+    colors = ["red", "blue", "green", "pink", "orange", "purple"]
     number = len(colors)
 
     plt.figure()
@@ -105,9 +134,9 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None):
 
         plt.plot(subdata[i][1], subdata[i][2], "o", markersize=3, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][0]), subdata[i][1], subdata[i][2]))
 
-        if initial:
+        if initial and subdata[0][-1] > 2:
             plt.plot(subdata[i][5], subdata[i][6], "o", markersize=1, color=colors[m])
-            plt.plot([subdata[i][1], subdata[i][5]], [subdata[i][2], subdata[i][6]], color=colors[m])
+            plt.plot([subdata[i][1], subdata[i][5]], [subdata[i][2], subdata[i][6]], "--", color=colors[m])
 
     plt.grid()
     plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
@@ -119,3 +148,33 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None):
         plt.show()
     if savefile is not None:
         plt.savefig(savefile)
+
+
+def printGridVelocity(subdata, flux=False, index=None):
+    """ Show U and V on the grid points around the particles
+    if flux==True: calculate flux in the gridcell
+    """
+    if subdata[0][-1] < 4:
+        print "printLocations(): missing grid information."
+        return
+
+    if index == None:
+        index = np.arange(0, len(subdata), dtype=np.int32).tolist()
+    elif isinstance(index, (int, np.integer)):
+        index = [index]
+
+    for i in range(len(subdata)):
+        if i in index:
+            p = subdata[i]
+            print "\nParticle {:.0f} at ({:05.3f}, {:05.3f}):".format(p[0], p[1], p[2])
+            print "U on grid:"
+            print p[7]
+            print "V on grid:"
+            print p[8]
+
+            if flux:
+                flux_numbers = st.calculateFlux(p[7:13])
+                flux_check = st.checkFlux(flux_numbers)
+                print "Flux on grid:"
+                print flux_numbers
+                print flux_check
