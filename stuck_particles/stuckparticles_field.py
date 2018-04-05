@@ -100,11 +100,17 @@ def checkCoast1d(fieldset, x, y, direction=None, time=0):
         return False
 
 
+def absolute(x, bool=True):
+    if bool is False:
+        return x
+    else:
+        return np.abs(x)
 
-def createCoastVelocities(fieldset, factor=True):
+
+def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     """ Search for gridpoints that represent coasts, i.e. groups of
     points with velocities [U, 0, 0] or [0, 0, U] (or V).
-    Then calculate the new center value as U * factor.
+    Then calculate the new center value as +- abs(U * factor) +- constant.
 
     Returns two fields (U and V) with 'imaginary'-velocities at the coast.
 
@@ -143,16 +149,16 @@ def createCoastVelocities(fieldset, factor=True):
             # Check in x direction
             check_x = checkCoast1d(fieldset, x, y, direction="x")
             if check_x[0]:
-                field_coast_U[y, x] = factor * vel_U[0, y, (x-1) % nx]
+                field_coast_U[y, x] = -constant + -absolute(factor * vel_U[0, y, (x-1) % nx], abs)
             elif check_x[1]:
-                field_coast_U[y, x] = factor * vel_U[0, y, (x+1) % nx]
+                field_coast_U[y, x] = constant + absolute(factor * vel_U[0, y, (x+1) % nx], abs)
 
             # Check in y direction
             check_y = checkCoast1d(fieldset, x, y, direction="y")
             if check_y[0]:
-                field_coast_V[y, x] = factor * vel_V[0, y-1, x]
+                field_coast_V[y, x] = -constant + -absolute(factor * vel_V[0, y-1, x], abs)
             elif check_y[1]:
-                field_coast_V[y, x] = factor * vel_V[0, y+1, x]
+                field_coast_V[y, x] = constant + absolute(factor * vel_V[0, y+1, x], abs)
 
     if factor==True:
         field_coast_U = field_coast_U.astype(np.bool)
