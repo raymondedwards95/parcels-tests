@@ -1,18 +1,63 @@
-""" Field manipulation functions for stuck particles """
+""" Field manipulation functions for stuck particles
 
+function: checkField(fieldset, text=True)
+    np.
+function: getIndicesGlobCurrent(lons, lats)
+function: getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False)
+    parcels.FieldSet
+function: checkCoast1d(fieldset, x, y, direction=None, time=0)
+function: createCoastVelocities(fieldset, factor=True, abs=True, constant=0)
+    stg.absolute
+function: addGlobCurrentCoast(fieldset, coastfields)
+function: exportCoastVelocities(field_coast_U, field_coast_V, filename)
+function: importCoastVelocities(filename)
+function: removeLandParticles(fieldset, particleset, show=False)
+    stp.particleCoords
+    stgr.getGridPoints
+    stgr.getGridVelocity
+
+function: main()
+    stpl.showCoast
+"""
 from parcels import FieldSet
 
 import numpy as np
-import math
 
-import stuckparticles as st
-import stuckparticles_class as stc
-import stuckparticles_analysis as sta
+import stuckparticles_particles as stp
+import stuckparticles_general as stg
+import stuckparticles_grid as stgr
+import stuckparticles_plot as stpl
 
-try:
-    import matplotlib.pyplot as plt
-except:
-    pass
+
+def checkField(fieldset, text=True):
+    """ Check if lons, lats are the same for different fields in fieldset """
+    if text:
+        print "\nFieldset contains the following fields:"
+        for i in range(len(fieldset.fields)):
+            print fieldset.fields[i].name
+
+    ulon = fieldset.U.grid.lon
+    ulat = fieldset.U.grid.lat
+    udep = fieldset.U.grid.depth
+    vlon = fieldset.V.grid.lon
+    vlat = fieldset.V.grid.lat
+    vdep = fieldset.V.grid.depth
+
+    if text:
+        if np.all(ulon == vlon):
+            print "longitudes are the same for U and V"
+        else:
+            print "longitudes are not the same for U and V. Note that not all functions will work as intended."
+        if np.all(ulat == vlat):
+            print "latitudes are the same for U and V"
+        else:
+            print "latitudes are not the same for U and V. Note that not all functions will work as intended."
+        if np.all(udep == vdep):
+            print "depths are the same for U and V"
+        else:
+            print "depths are not the same for U and V. Note that not all functions will work as intended."
+
+    return np.all(ulon == vlon) and np.all(ulat == vlat) and np.all(udep == vdep)
 
 
 def getIndicesGlobCurrent(lons, lats):
@@ -31,7 +76,7 @@ def getIndicesGlobCurrent(lons, lats):
     lat_range = range((lat_0-5+80)*4-1, (lat_1+5+80)*4+1)
 
     indices = {"lon": lon_range,
-           "lat": lat_range}
+               "lat": lat_range}
 
     print "getIndicesGlobCurrent(): Success! Indices created."
     return indices
@@ -100,13 +145,6 @@ def checkCoast1d(fieldset, x, y, direction=None, time=0):
         return False
 
 
-def absolute(x, bool=True):
-    if bool is False:
-        return x
-    else:
-        return np.abs(x)
-
-
 def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     """ Search for gridpoints that represent coasts, i.e. groups of
     points with velocities [U, 0, 0] or [0, 0, U] (or V).
@@ -149,16 +187,16 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
             # Check in x direction
             check_x = checkCoast1d(fieldset, x, y, direction="x")
             if check_x[0]:
-                field_coast_U[y, x] = -constant + -absolute(factor * vel_U[0, y, (x-1) % nx], abs)
+                field_coast_U[y, x] = -constant + -stg.absolute(factor * vel_U[0, y, (x-1) % nx], abs)
             elif check_x[1]:
-                field_coast_U[y, x] = constant + absolute(factor * vel_U[0, y, (x+1) % nx], abs)
+                field_coast_U[y, x] = constant + stg.absolute(factor * vel_U[0, y, (x+1) % nx], abs)
 
             # Check in y direction
             check_y = checkCoast1d(fieldset, x, y, direction="y")
             if check_y[0]:
-                field_coast_V[y, x] = -constant + -absolute(factor * vel_V[0, y-1, x], abs)
+                field_coast_V[y, x] = -constant + -stg.absolute(factor * vel_V[0, y-1, x], abs)
             elif check_y[1]:
-                field_coast_V[y, x] = constant + absolute(factor * vel_V[0, y+1, x], abs)
+                field_coast_V[y, x] = constant + stg.absolute(factor * vel_V[0, y+1, x], abs)
 
     if factor==True:
         field_coast_U = field_coast_U.astype(np.bool)
@@ -200,43 +238,24 @@ def importCoastVelocities(filename):
     return data["coast_U"], data["coast_V"]
 
 
-def showCoast(fields, type=np.bool, origin="GlobCurrent", show=None, savefile=None):
-    """ Plot values in fields in a contour plot """
-    if savefile is None:
-        show = True
-    if show is None and savefile is not None:
-        show = False
+def removeLandParticles(fieldset, particleset, show=False):
+    """ Remove particles that are on land.
+    Particles on land are particles with velocities 0 at
+    grid points around.
+    """
+    list_coords = stp.particleCoords(particleset)
+    n = 0
+    for i in range(np.shape(list_coords)[0]-1, 0, -1):
+        gridpoints = stgr.getGridPoints(fieldset, list_coords[i])
+        gridvelocity = stgr.getGridVelocity(fieldset, gridpoints)
 
-    if len(np.shape(fields)) == 3 and np.shape(fields)[0] == 2:
-        field = fields[0] + fields[1]
-    elif len(np.shape(fields)) == 2:
-        field = fields
-    else:
-        print "showCoast(): fields not in correct form"
-        return
-
-    field = field.astype(type)
-
-    ny, nx = np.shape(field)
-    if origin == "GlobCurrent":
-        lons = np.linspace(-181.125, 181.125, num=nx)
-        lats = np.linspace(-79.875, 79.875, num=ny)
-    else:
-        lons = np.arange(nx)
-        lats = np.arange(ny)
-
-    plt.figure()
-    plt.contourf(lons, lats, field)
-    plt.title("Locations of coasts")
-    plt.xlabel("longitude")
-    plt.ylabel("latitude")
-    plt.colorbar()
-    plt.grid()
-    if show:
-        print "showCoast(): showing plot"
-        plt.show()
-    if savefile is not None:
-        plt.savefig(savefile)
+        # check if all u and v are 0
+        if not np.any(gridvelocity[0]) and not np.any(gridvelocity[1]):
+            if show:
+                print "removeLandParticles(): deleted particle", particleset[i].id
+            particleset.remove(i)
+            n = n + 1
+    print "removeLandParticles(): deleted {} particles".format(n)
 
 
 def main():
@@ -246,7 +265,7 @@ def main():
 
     new_fset = addGlobCurrentCoast(fset, coast_fields)
 
-    showCoast(coast_fields)
+    stpl.showCoast(coast_fields)
 
 
 if __name__ == "__main__":
