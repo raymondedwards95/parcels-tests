@@ -1,14 +1,20 @@
-""" Tools for analysing data for stuck particles """
-import stuckparticles as st
-import stuckparticles_class as stc
+""" Tools for analysing data for stuck particles
 
+function: exportParticleData(fieldset, particleset, velocities=False, savefile=None)
+    np.
+    stgr.getGridPoints
+    stgr.getGridVelocity
+function: importParticleData(filename)
+function: extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False)
+function: printLocations(subdata, initial=False)
+function: printGridVelocity(subdata, flux=False, index=None)
+    stgr.calculateFlux
+    stgr.checkFlux
+"""
 import numpy as np
 import math
 
-try:
-    import matplotlib.pyplot as plt
-except:
-    pass
+import stuckparticles_grid as stgr
 
 
 def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
@@ -24,9 +30,8 @@ def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
         sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.time_simulated])
 
         if velocities:
-            gp = st.getGridPoints(fieldset, [p.time, p.lon, p.lat, p.depth])
-            gv = st.getGridVelocity(fieldset, gp)
-            # sublist.append(gv)
+            gp = stgr.getGridPoints(fieldset, [p.time, p.lon, p.lat, p.depth])
+            gv = stgr.getGridVelocity(fieldset, gp)
             sublist = np.append(sublist, gv)
 
         data.append(sublist)
@@ -111,69 +116,6 @@ def printLocations(subdata, initial=False):
             print "Particle {:.0f}: Last location ({:05.3f}, {:05.3f}).".format(p[0], p[1], p[2])
 
 
-
-def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfield=None, coastorigin="GlobCurrent", coasttype=np.bool):
-    """ Plot locations of particles in subdata or data
-    Assuming that the first three values are (id, lon, lat).
-    """
-    if savefile is None:
-        show = True
-    if show is None and savefile is not None:
-        show = False
-
-    if initial and subdata[0][-1] < 3:
-        print "plotLocations(): not enough data."
-        initial = False
-
-    if coastfield is not None:
-        if len(np.shape(coastfield)) == 3 and np.shape(coastfield)[0] == 2:
-            field = coastfield[0] + coastfield[1]
-        elif len(np.shape(coastfield)) == 2:
-            field = coastfield
-        else:
-            print "plotLocations(): coastfield not in correct form"
-            coastfield = None
-
-        field = field.astype(coasttype)
-
-        ny, nx = np.shape(field)
-        if coastorigin == "GlobCurrent":
-            lons = np.linspace(-181.125, 181.125, num=nx)
-            lats = np.linspace(-79.875, 79.875, num=ny)
-        else:
-            lons = np.arange(nx)
-            lats = np.arange(ny)
-
-
-    colors = ["red", "blue", "green", "pink", "orange", "purple"]
-    number = len(colors)
-
-    plt.figure()
-    for i in range(len(subdata)):
-        m = i%number
-
-        plt.plot(subdata[i][1], subdata[i][2], "o", markersize=3, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][0]), subdata[i][1], subdata[i][2]))
-
-        if initial and subdata[0][-1] > 2:
-            plt.plot(subdata[i][5], subdata[i][6], "o", markersize=1, color=colors[m])
-            plt.plot([subdata[i][1], subdata[i][5]], [subdata[i][2], subdata[i][6]], "--", color=colors[m])
-
-    if coastfield is not None:
-        plt.contourf(lons, lats, field, alpha=0.5, cmap="Greys")
-        # plt.colorbar()
-
-    plt.grid()
-    plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
-    plt.xlabel("longitude")
-    plt.ylabel("latitude")
-    plt.title(title)
-
-    if show:
-        plt.show()
-    if savefile is not None:
-        plt.savefig(savefile)
-
-
 def printGridVelocity(subdata, flux=False, index=None):
     """ Show U and V on the grid points around the particles
     if flux==True: calculate flux in the gridcell
@@ -197,39 +139,8 @@ def printGridVelocity(subdata, flux=False, index=None):
             print p[8]
 
             if flux:
-                flux_numbers = st.calculateFlux(p[7:13])
-                flux_check = st.checkFlux(flux_numbers)
+                flux_numbers = stgr.calculateFlux(p[7:13])
+                flux_check = stgr.checkFlux(flux_numbers)
                 print "Flux on grid:"
                 print flux_numbers
                 print flux_check
-
-
-def plotHistogram(subdata, width=1, show=None, savefile=None):
-    """ Show number of stuck particles in a histogram. """
-    if savefile is None:
-        show = True
-    if show is None and savefile is not None:
-        show = False
-
-    if subdata[0][-1] < 2:
-        print "plotHistogram(): missing grid information."
-        return
-
-    list = []
-    for p in subdata:
-        list.append(p[3]/(24.*60.*60.))
-
-    n_bins = int(round((np.max(list) - np.min(list)) / width))
-
-    plt.figure()
-    plt.hist(list, n_bins, facecolor="green", alpha=0.75)
-    plt.xlabel("days stuck")
-    plt.ylabel("number of particles")
-    plt.title("")
-    plt.grid()
-
-    if show:
-        print "plotHistogram(): showing plot"
-        plt.show()
-    if savefile is not None:
-        plt.savefig(savefile)
