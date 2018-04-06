@@ -16,7 +16,7 @@ import stuckparticles_particles as stp
 import stuckparticles_plot as stpl
 
 
-def testGlobalStuckParticlesAdvect(simulation, particles, coasts, filename):
+def GlobalStuckParticlesAdvection(simulation, particles, coasts, filename):
     """ Function for advecting particles using given parameters """
     [time_total, time_step] = simulation
     [p_lons, p_lats] = particles
@@ -46,7 +46,6 @@ def testGlobalStuckParticlesAdvect(simulation, particles, coasts, filename):
 
     ## Remove landparticles
     stf.removeLandParticles(fieldset=fset, particleset=pset)
-    # should print number of particles
 
 
     ## Define kernels
@@ -75,3 +74,16 @@ def testGlobalStuckParticlesAdvect(simulation, particles, coasts, filename):
 
     ## Export data
     return sta.exportParticleData(fieldset=fset, particleset=pset, velocities=True, savefile=filename+"particle_data")
+
+
+def main():
+    simulation = [50, 10]
+    particles = [np.linspace(-175, 175, num=11), np.linspace(-75, 75, num=9)]
+    coasts = [True, -1, 0]
+    filename = "GlobalStuckParticles_test/"
+
+    data = GlobalStuckParticlesAdvection(simulation, particles, coasts, filename)
+
+
+if __name__ == "__main__":
+    main()

@@ -243,6 +243,7 @@ def removeLandParticles(fieldset, particleset, show=False):
     Particles on land are particles with velocities 0 at
     grid points around.
     """
+    print "removeLandParticles(): there are {} particles in the ParticleSet".format(len(particleset))
     list_coords = stp.particleCoords(particleset)
     n = 0
     for i in range(np.shape(list_coords)[0]-1, 0, -1):
@@ -255,7 +256,8 @@ def removeLandParticles(fieldset, particleset, show=False):
                 print "removeLandParticles(): deleted particle", particleset[i].id
             particleset.remove(i)
             n = n + 1
-    print "removeLandParticles(): deleted {} particles".format(n)
+    print "removeLandParticles(): deleted {} particles that were on land".format(n)
+    print "removeLandParticles(): there are now {} particles in the ParticleSet".format(len(particleset))
 
 
 def main():

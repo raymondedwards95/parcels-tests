@@ -3,14 +3,18 @@
 class: stuckParticle
     parcels.JITParticle
     parcels.ScipyParticle
+    parcels.Variable
     np.
+    operator.attrgetter
 kernelfunction: checkVelocity(particle, fieldset, time, dt)
     math.
 """
-from parcels import JITParticle, ScipyParticle
+from parcels import JITParticle, ScipyParticle, Variable
 
 import numpy as np
 import math
+
+from operator import attrgetter
 
 
 class stuckParticle(JITParticle):
