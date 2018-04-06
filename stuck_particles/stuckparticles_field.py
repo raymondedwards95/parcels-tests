@@ -26,7 +26,6 @@ import numpy as np
 import stuckparticles_particles as stp
 import stuckparticles_general as stg
 import stuckparticles_grid as stgr
-import stuckparticles_plot as stpl
 
 
 def checkField(fieldset, text=True):
@@ -261,6 +260,8 @@ def removeLandParticles(fieldset, particleset, show=False):
 
 
 def main():
+    import stuckparticles_plot as stpl
+
     fset = getFieldsetGlobCurrent("GlobCurrent/", time_extrapolation=True)
     coast_fields = createCoastVelocities(fset)
     exportCoastVelocities(coast_fields[0], coast_fields[1], "GlobCurrentCoast")

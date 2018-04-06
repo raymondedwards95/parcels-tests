@@ -10,6 +10,7 @@ function: printLocations(subdata, initial=False)
 function: printGridVelocity(subdata, flux=False, index=None)
     stgr.calculateFlux
     stgr.checkFlux
+function: filterParticles(subdata, time_stuck=0., time_moving=0.)
 """
 import numpy as np
 import math
@@ -144,3 +145,21 @@ def printGridVelocity(subdata, flux=False, index=None):
                 print "Flux on grid:"
                 print flux_numbers
                 print flux_check
+
+
+def filterParticles(subdata, time_stuck=0., time_moving=0.):
+    """ Function to find particles with (more/different) specific parameters
+    using particles in 'subdata', created by extractStuckParticles().
+    'time_stuck' and 'time_moving' are in days.
+    """
+    if subdata[0][-1] < 2:
+        print "filterParticles(): can't filter using 'time_stuck' or 'time_moving', not enough information."
+        return
+
+    new_data = []
+
+    for p in subdata:
+        if p[3] >= time_stuck*24*60*60 and p[4] >= time_moving*24*60*60:
+            new_data.append(p)
+
+    return new_data

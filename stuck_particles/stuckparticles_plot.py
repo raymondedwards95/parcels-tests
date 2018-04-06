@@ -123,7 +123,7 @@ def showCoast(fields, type=np.bool, origin="GlobCurrent", show=None, savefile=No
         show = False
 
     if len(np.shape(fields)) == 3 and np.shape(fields)[0] == 2:
-        field = fields[0] + fields[1]
+        field = np.sqrt(np.square(fields[0]) + np.square(fields[1]))
     elif len(np.shape(fields)) == 2:
         field = fields
     else:
@@ -169,7 +169,7 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
 
     if coastfield is not None:
         if len(np.shape(coastfield)) == 3 and np.shape(coastfield)[0] == 2:
-            field = coastfield[0] + coastfield[1]
+            field = np.sqrt(np.square(coastfield[0]) + np.square(coastfield[1]))
         elif len(np.shape(coastfield)) == 2:
             field = coastfield
         else:
@@ -194,7 +194,7 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
     for i in range(len(subdata)):
         m = i%number
 
-        plt.plot(subdata[i][1], subdata[i][2], "o", markersize=3, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][0]), subdata[i][1], subdata[i][2]))
+        plt.plot(subdata[i][1], subdata[i][2], "o", markersize=4, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][0]), subdata[i][1], subdata[i][2]))
 
         if initial and subdata[0][-1] > 2:
             plt.plot(subdata[i][5], subdata[i][6], "o", markersize=1, color=colors[m])
