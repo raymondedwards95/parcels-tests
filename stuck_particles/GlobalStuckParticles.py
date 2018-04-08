@@ -16,7 +16,7 @@ import stuckparticles_particles as stp
 import stuckparticles_plot as stpl
 
 
-def GlobalStuckParticlesAdvection(simulation, particles, coasts, filename):
+def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, fieldlocation="GlobCurrent/"):
     """ Function for advecting particles using given parameters """
     [time_total, time_step] = simulation
     [p_lons, p_lats] = particles
@@ -24,18 +24,18 @@ def GlobalStuckParticlesAdvection(simulation, particles, coasts, filename):
 
     ## Create save folder
     try:
-        os.makedirs(filename)
+        os.makedirs(savename)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
     ## Import field data
     # NOTE: Fieldset data location is hardcoded now
-    fset = stf.getFieldsetGlobCurrent(filelocation="GlobCurrent/", time_extrapolation=True)
+    fset = stf.getFieldsetGlobCurrent(filelocation=fieldlocation, time_extrapolation=True)
 
     ## Find coasts
     coasts = stf.createCoastVelocities(fieldset=fset, factor=factor, abs=abs, constant=constant)
-    stf.exportCoastVelocities(coasts[0], coasts[1], filename+"coasts")
+    stf.exportCoastVelocities(coasts[0], coasts[1], savename+"coasts")
 
     ## Add coasts to fieldset
     fset = stf.addGlobCurrentCoast(fieldset=fset, coastfields=coasts)
@@ -68,25 +68,25 @@ def GlobalStuckParticlesAdvection(simulation, particles, coasts, filename):
         kernels,
         runtime=timedelta(days=time_total),
         dt=timedelta(minutes=time_step),
-        output_file=pset.ParticleFile(name=filename+"trajectory", outputdt=timedelta(hours=3)),
+        output_file=pset.ParticleFile(name=savename+"trajectory", outputdt=timedelta(hours=3)),
         recovery={ErrorCode.ErrorOutOfBounds: stg.deleteParticle}
     )
 
 
     ## Export data
-    return sta.exportParticleData(fieldset=fset, particleset=pset, velocities=True, savefile=filename+"particle_data")
+    return sta.exportParticleData(fieldset=fset, particleset=pset, velocities=True, savefile=savename+"particle_data")
 
 
-def GlobalStuckParticlesAnalysis(parameters, filename, particledata=None, coast=False, plot=False, histogram=False, show=False, locations=False, velocities=False):
+def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=False, plot=False, histogram=False, show=False, locations=False, velocities=False):
     """"""
     [time_stuck, time_moving] = parameters
 
     ## Read data
     if particledata is None:
         try:
-            data = sta.importParticleData(filename+"particle_data.npz")
+            data = sta.importParticleData(savename+"particle_data.npz")
         except:
-            print "GlobalStuckParticlesAnalysis(): '{}particle_data' not found".format(filename)
+            print "GlobalStuckParticlesAnalysis(): '{}particle_data' not found".format(savename)
             return
     elif isinstance(particledata, list):
         data = particledata
@@ -97,7 +97,7 @@ def GlobalStuckParticlesAnalysis(parameters, filename, particledata=None, coast=
     subdata_all = sta.extractStuckParticles(data=data, time_stuck=0., time_moving=0., level=0, text=True)
 
     if coast:
-        coastfield = stf.importCoastVelocities(filename+"coasts.npz")
+        coastfield = stf.importCoastVelocities(savename+"coasts.npz")
     else:
         coastfield = None
 
@@ -112,22 +112,22 @@ def GlobalStuckParticlesAnalysis(parameters, filename, particledata=None, coast=
 
     ## Plots
     if plot:
-        stpl.plotLocations(subdata=subdata, title="Final locations of stuck particles", initial=False, show=show, savefile=filename+"final_locations", coastfield=coastfield)
+        stpl.plotLocations(subdata=subdata, title="Final locations of stuck particles", initial=False, show=show, savefile=savename+"final_locations", coastfield=coastfield)
 
     ## histogram
     if histogram:
-        stpl.plotHistogram(subdata=subdata, width=1, show=show, savefile=filename+"histogram")
+        stpl.plotHistogram(subdata=subdata, width=1, show=show, savefile=savename+"histogram")
 
 
 def main():
     simulation = [50, 10] #days, minutes
     particles = [np.linspace(-175, 175, num=11), np.linspace(-75, 75, num=9)]
     coasts = [True, -1, 0]
-    filename = "GlobalStuckParticles_test/"
+    savename = "GlobalStuckParticles_test/"
 
-    data = GlobalStuckParticlesAdvection(simulation, particles, coasts, filename)
+    data = GlobalStuckParticlesAdvection(simulation, particles, coasts, savename)
 
-    GlobalStuckParticlesAnalysis([0, 0], filename, particledata=None, coast=True, plot=True, histogram=True, show=False, locations=True, velocities=False)
+    GlobalStuckParticlesAnalysis([0, 0], savename, particledata=None, coast=True, plot=True, histogram=True, show=False, locations=True, velocities=False)
 
 
 if __name__ == "__main__":
