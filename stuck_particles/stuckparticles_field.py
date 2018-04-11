@@ -159,6 +159,9 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     dims_U = vel_U.shape
     dims_V = vel_V.shape
 
+    if factor == 0 and constant == 0:
+        factor = True
+
     if len(dims_U) == 3 and len(dims_V) == 3:
         if dims_U[-1] == dims_V[-1]:
             nx = dims_U[-1]
@@ -197,7 +200,7 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
             elif check_y[1]:
                 field_coast_V[y, x] = constant + stg.absolute(factor * vel_V[0, y+1, x], abs)
 
-    if factor==True:
+    if factor == True:
         field_coast_U = field_coast_U.astype(np.bool)
         field_coast_V = field_coast_V.astype(np.bool)
 
@@ -216,10 +219,12 @@ def addGlobCurrentCoast(fieldset, coastfields):
     else:
         print "addGlobCurrentCoast(): fieldset.U.data and fieldset.V.data do not have the same shape."
         return
-
-    for t in range(nt):
-        new_fieldset.U.data[t] += field_coast_U
-        new_fieldset.V.data[t] += field_coast_V
+    if field_coast_U.dtype == bool and field_coast_U.dtype == bool:
+        pass
+    else:
+        for t in range(nt):
+            new_fieldset.U.data[t] += field_coast_U
+            new_fieldset.V.data[t] += field_coast_V
 
     return new_fieldset
 

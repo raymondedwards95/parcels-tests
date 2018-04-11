@@ -16,11 +16,17 @@ import stuckparticles_particles as stp
 import stuckparticles_plot as stpl
 
 
-def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, fieldlocation="GlobCurrent/"):
+def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, fieldlocation="GlobCurrent/", domain=None):
     """ Function for advecting particles using given parameters """
     [time_total, time_step] = simulation
     [p_lons, p_lats] = particles
     [abs, factor, constant] = coasts
+    if domain is not None:
+        [d_lons, d_lats] = domain
+        indices = stf.getIndicesGlobCurrent(d_lons, d_lats)
+    elif domain is None:
+        indices = {}
+
 
     ## Create save folder
     try:
@@ -31,7 +37,7 @@ def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, field
 
     ## Import field data
     # NOTE: Fieldset data location is hardcoded now
-    fset = stf.getFieldsetGlobCurrent(filelocation=fieldlocation, time_extrapolation=True)
+    fset = stf.getFieldsetGlobCurrent(filelocation=fieldlocation, time_extrapolation=True, indices=indices)
 
     ## Find coasts
     coasts = stf.createCoastVelocities(fieldset=fset, factor=factor, abs=abs, constant=constant)
@@ -68,7 +74,7 @@ def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, field
         kernels,
         runtime=timedelta(days=time_total),
         dt=timedelta(minutes=time_step),
-        output_file=pset.ParticleFile(name=savename+"trajectory", outputdt=timedelta(hours=3)),
+        output_file=pset.ParticleFile(name=savename+"trajectory", outputdt=timedelta(hours=6)),
         recovery={ErrorCode.ErrorOutOfBounds: stg.deleteParticle}
     )
 
@@ -77,7 +83,7 @@ def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, field
     return sta.exportParticleData(fieldset=fset, particleset=pset, velocities=True, savefile=savename+"particle_data")
 
 
-def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=False, plot=False, histogram=False, show=False, locations=False, velocities=False):
+def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=False, plot=False, histogram=False, show=False, locations=False, velocities=False, trajectory=False, scatter=False):
     """"""
     [time_stuck, time_moving] = parameters
 
@@ -86,7 +92,7 @@ def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=
         try:
             data = sta.importParticleData(savename+"particle_data.npz")
         except:
-            print "GlobalStuckParticlesAnalysis(): '{}particle_data' not found".format(savename)
+            print "GlobalStuckParticlesAnalysis(): '{}particle_data.npz' not found".format(savename)
             return
     elif isinstance(particledata, list):
         data = particledata
@@ -116,18 +122,24 @@ def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=
 
     ## histogram
     if histogram:
-        stpl.plotHistogram(subdata=subdata, width=1, show=show, savefile=savename+"histogram")
+        stpl.plotHistogram(subdata=subdata, width=5, show=show, savefile=savename+"histogram")
+
+    ## scatter
+    if scatter:
+        stpl.scatterStuckMoving(subdata=subdata, show=show, savefile=savename+"scatter")
+
+    return len(subdata)
 
 
 def main():
-    simulation = [50, 10] #days, minutes
-    particles = [np.linspace(-175, 175, num=11), np.linspace(-75, 75, num=9)]
+    simulation = [75, 10] #days, minutes
+    particles = [np.linspace(-175, 175, num=25), np.linspace(-75, 75, num=15)]
     coasts = [True, -1, 0]
     savename = "GlobalStuckParticles_test/"
 
     data = GlobalStuckParticlesAdvection(simulation, particles, coasts, savename)
 
-    GlobalStuckParticlesAnalysis([0, 0], savename, particledata=None, coast=True, plot=True, histogram=True, show=False, locations=True, velocities=False)
+    GlobalStuckParticlesAnalysis([0, 0], savename, particledata=None, coast=True, plot=True, histogram=True, show=False, locations=True, velocities=False, scatter=True)
 
 
 if __name__ == "__main__":

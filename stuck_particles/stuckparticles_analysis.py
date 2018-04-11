@@ -98,7 +98,7 @@ def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False
                 list.append(sublist)
 
     if text:
-        print "Total number of particles: {}. {} are 'stuck', {} are 'free'.".format(len(data), stuck_particles, free_particles)
+        print "extractStuckParticles(): Total number of particles: {}. Using given arguments: {} are 'stuck' for at least {} days, {} are 'free'.".format(len(data), stuck_particles, time_stuck, free_particles)
     return list
 
 
@@ -115,6 +115,7 @@ def printLocations(subdata, initial=False):
     else:
         for p in subdata:
             print "Particle {:.0f}: Last location ({:05.3f}, {:05.3f}).".format(p[0], p[1], p[2])
+    print ""
 
 
 def printGridVelocity(subdata, flux=False, index=None):
@@ -145,6 +146,7 @@ def printGridVelocity(subdata, flux=False, index=None):
                 print "Flux on grid:"
                 print flux_numbers
                 print flux_check
+    print ""
 
 
 def filterParticles(subdata, time_stuck=0., time_moving=0.):
@@ -159,7 +161,10 @@ def filterParticles(subdata, time_stuck=0., time_moving=0.):
     new_data = []
 
     for p in subdata:
-        if p[3] >= time_stuck*24*60*60 and p[4] >= time_moving*24*60*60:
+        if p[3] > time_stuck*24*60*60 and p[4] > time_moving*24*60*60:
+        # if p[3] >= time_stuck*24*60*60 and p[4] >= time_moving*24*60*60:
             new_data.append(p)
+
+    print "filterParticles(): New number of particles: {}. These are all stuck for at least {} days".format(len(new_data), time_stuck)
 
     return new_data
