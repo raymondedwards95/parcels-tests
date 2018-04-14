@@ -90,7 +90,7 @@ def getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False):
     dim = {"lat": "lat",
            "lon": "lon",
            "time": "time"}
-    fieldset = FieldSet.from_netcdf(filenames, variables=var, dimensions=dim, indices=indices, allow_time_extrapolation=time_extrapolation)
+    fieldset = FieldSet.from_netcdf(filenames, variables=var, dimensions=dim, indices=indices, allow_time_extrapolation=time_extrapolation, full_load=True)
 
     print "getFieldsetGlobCurrent(): Success! Fieldset imported."
     return fieldset
