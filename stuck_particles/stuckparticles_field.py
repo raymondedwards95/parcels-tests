@@ -158,6 +158,10 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     vel_V = fieldset.V.data
     dims_U = vel_U.shape
     dims_V = vel_V.shape
+    lons_U = fieldset.U.grid.lon
+    lons_V = fieldset.V.grid.lon
+    lats_U = fieldset.U.grid.lat
+    lats_V = fieldset.V.grid.lat
 
     if factor == 0 and constant == 0:
         factor = True
@@ -177,6 +181,13 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     else:
         print "createCoastVelocities(): dimensions of U.data and V.data are not 3, but {} and {}.".format(len(dims_U), len(dims_V))
         return
+
+    if lons_U != lons_V or lats_U != lats_V:
+        print "createCoastVelocities(): grids of U and V are not the same."
+        return
+    else:
+        lons = lons_U
+        lats = lats_U
 
     field_coast_U = np.zeros([ny, nx])
     field_coast_V = np.zeros([ny, nx])
