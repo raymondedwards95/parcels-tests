@@ -103,3 +103,4 @@ ENV/
 *.nc
 *.zip
 *.npz
+*.ipynb

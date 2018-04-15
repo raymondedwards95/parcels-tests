@@ -204,7 +204,7 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
         field_coast_U = field_coast_U.astype(np.bool)
         field_coast_V = field_coast_V.astype(np.bool)
 
-    return [field_coast_U, field_coast_V]
+    return [field_coast_U, field_coast_V, lons, lats]
 
 
 def addGlobCurrentCoast(fieldset, coastfields):
