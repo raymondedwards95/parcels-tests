@@ -134,7 +134,7 @@ def showCoast(coastsfields, type=np.bool, show=None, savefile=None, field="all")
 
     if field == "U":
         field = field_coast_U
-    elif field = "V":
+    elif field == "V":
         field = field_coast_V
     else:
         field = np.sqrt(np.square(field_coast_U) + np.square(field_coast_V))
