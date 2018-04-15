@@ -8,13 +8,14 @@ function: getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=Fa
 function: checkCoast1d(fieldset, x, y, direction=None, time=0)
 function: createCoastVelocities(fieldset, factor=True, abs=True, constant=0)
     stg.absolute
-function: addGlobCurrentCoast(fieldset, coastfields)
+function: addGlobCurrentCoast(fieldset, coastfields, factor=1.)
 function: exportCoastVelocities(field_coast_U, field_coast_V, filename)
 function: importCoastVelocities(filename)
 function: removeLandParticles(fieldset, particleset, show=False)
     stp.particleCoords
     stgr.getGridPoints
     stgr.getGridVelocity
+function: createConstantCoastField(fieldlocation, constant=1., filename=None)
 
 function: main()
     stpl.showCoast
@@ -218,9 +219,10 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     return [field_coast_U, field_coast_V, lons, lats]
 
 
-def addGlobCurrentCoast(fieldset, coastfields):
+def addGlobCurrentCoast(fieldset, coastfields, factor=1.):
     """ Returns a new fieldset that results from
-    fieldset + coastfields
+    fieldset + coastfields*factor
+    'factor' is used to multiply all non-zeros in coastfields
     """
     [field_coast_U, field_coast_V, lons, lats] = coastfields
     new_fieldset = fieldset
@@ -234,8 +236,8 @@ def addGlobCurrentCoast(fieldset, coastfields):
         pass
     else:
         for t in range(nt):
-            new_fieldset.U.data[t] += field_coast_U
-            new_fieldset.V.data[t] += field_coast_V
+            new_fieldset.U.data[t] += factor * field_coast_U
+            new_fieldset.V.data[t] += factor * field_coast_V
 
     return new_fieldset
 
@@ -275,6 +277,17 @@ def removeLandParticles(fieldset, particleset, show=False):
             n = n + 1
     print "removeLandParticles(): deleted {} particles that were on land".format(n)
     print "removeLandParticles(): there are now {} particles in the ParticleSet".format(len(particleset))
+
+
+def createConstantCoastField(fieldlocation, constant=1., filename=None):
+    """ Function that uses getFieldsetGlobCurrent() and createCoastVelocities()
+    to create a constant field at the coasts.
+    It exports and returns the resulting fields.
+    """
+    fset = getFieldsetGlobCurrent(fieldlocation)
+    coasts = createCoastVelocities(fset, factor=0, constant=constant)
+    if filename is not None:
+        exportCoastVelocities(coasts, filename)
 
 
 def main():
