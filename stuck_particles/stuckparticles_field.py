@@ -182,7 +182,7 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
         print "createCoastVelocities(): dimensions of U.data and V.data are not 3, but {} and {}.".format(len(dims_U), len(dims_V))
         return
 
-    if lons_U != lons_V or lats_U != lats_V:
+    if np.any(lons_U != lons_V) or np.any(lats_U != lats_V):
         print "createCoastVelocities(): grids of U and V are not the same."
         return
     else:

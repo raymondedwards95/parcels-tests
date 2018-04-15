@@ -119,7 +119,7 @@ def plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=Non
         plt.show()
 
 
-def showCoast(coastsfields, type=np.bool, show=None, savefile=None, field="all"):
+def showCoast(coastfields, coasttype=np.bool, show=None, savefile=None, field="all"):
     """ Plot values in fields in a contour plot """
     if len(coastfields) == 4:
         [field_coast_U, field_coast_V, lons, lats] = coastfields
@@ -177,7 +177,6 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         else:
             print "plotLocations(): 'coastfields' contains not enough information, skipping coasts"
             coastfields = None
-            break
 
         field = np.sqrt(np.square(field_coast_U) + np.square(field_coast_V))
         field = field.astype(coasttype)
@@ -196,7 +195,7 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
             plt.plot(subdata[i][5], subdata[i][6], "o", markersize=1, color=colors[m])
             plt.plot([subdata[i][1], subdata[i][5]], [subdata[i][2], subdata[i][6]], "--", color=colors[m])
 
-    if coastfield is not None:
+    if coastfields is not None:
         plt.contourf(lons, lats, field, alpha=0.5, cmap="Greys")
         # plt.xlim([np.min(lons), np.max(lons)])
         # plt.ylim([np.max(lats), np.min(lats)])
@@ -282,8 +281,8 @@ def scatterStuckMoving(subdata, show=None, savefile=None, title=""):
     plt.plot(x, y, "--", color="red")
     plt.xlabel("days stuck")
     plt.ylabel("days moved")
-    plt.xlim([-2, max(time_moving+time_stuck)*1.05])
-    plt.ylim([-2, max(time_moving+time_stuck)*1.05])
+    plt.xlim([-0.1, max(time_moving+time_stuck)*1.05])
+    plt.ylim([-0.1, max(time_moving+time_stuck)*1.05])
     plt.title(title+"\n{} particles in plot".format(len(subdata)))
     plt.grid()
 
