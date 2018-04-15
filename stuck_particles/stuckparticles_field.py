@@ -211,7 +211,7 @@ def addGlobCurrentCoast(fieldset, coastfields):
     """ Returns a new fieldset that results from
     fieldset + coastfields
     """
-    [field_coast_U, field_coast_V] = coastfields
+    [field_coast_U, field_coast_V, lons, lats] = coastfields
     new_fieldset = fieldset
 
     if np.shape(fieldset.U.data)[0] == np.shape(fieldset.V.data)[0]:
@@ -229,17 +229,19 @@ def addGlobCurrentCoast(fieldset, coastfields):
     return new_fieldset
 
 
-def exportCoastVelocities(field_coast_U, field_coast_V, filename):
+def exportCoastVelocities(coastfields, filename):
     """ Export fields as numpy-array-files """
+    [field_coast_U, field_coast_V, lons, lats] = coastfields
+
     if not isinstance(filename, str):
         print "exportCoastVelocities(): filename is not a string"
         return
-    np.savez_compressed(filename, coast_U=field_coast_U, coast_V=field_coast_V)
+    np.savez_compressed(filename, coast_U=field_coast_U, coast_V=field_coast_V, lons=lons, lats=lats)
     print "exportCoastVelocities(): Fields saved as " + filename
 
 def importCoastVelocities(filename):
     data = np.load(filename)
-    return data["coast_U"], data["coast_V"]
+    return [data["coast_U"], data["coast_V"], data["lons"], data["lats"]]
 
 
 def removeLandParticles(fieldset, particleset, show=False):
