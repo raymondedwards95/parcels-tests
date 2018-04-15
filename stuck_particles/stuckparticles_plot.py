@@ -5,8 +5,8 @@ plotfunction: plotVelocity(vector, field="U", coords=None, show=None, savefile=N
     math.
     plt.
 plotfunction: plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=None)
-plotfunction: showCoast(fields, type=np.bool, origin="GlobCurrent", show=None, savefile=None)
-plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfield=None, coastorigin="GlobCurrent", coasttype=np.bool)
+plotfunction: showCoast(fields, type=np.bool, show=None, savefile=None, field="all")
+plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, coasttype=np.bool)
 plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None)
 """
 import numpy as np
@@ -119,33 +119,32 @@ def plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=Non
         plt.show()
 
 
-def showCoast(fields, type=np.bool, origin="GlobCurrent", show=None, savefile=None):
+def showCoast(coastfields, coasttype=np.bool, show=None, savefile=None, field="all"):
     """ Plot values in fields in a contour plot """
+    if len(coastfields) == 4:
+        [field_coast_U, field_coast_V, lons, lats] = coastfields
+    else:
+        print "showCoast(): 'coastfields' contains not enough information"
+        return
+
     if savefile is None:
         show = True
     if show is None and savefile is not None:
         show = False
 
-    if len(np.shape(fields)) == 3 and np.shape(fields)[0] == 2:
-        field = np.sqrt(np.square(fields[0]) + np.square(fields[1]))
-    elif len(np.shape(fields)) == 2:
-        field = fields
+    if field == "U":
+        field = field_coast_U
+    elif field == "V":
+        field = field_coast_V
     else:
-        print "showCoast(): fields not in correct form"
-        return
+        field = np.sqrt(np.square(field_coast_U) + np.square(field_coast_V))
 
-    field = field.astype(type)
-
-    ny, nx = np.shape(field)
-    if origin == "GlobCurrent":
-        lons = np.linspace(-181.125, 181.125, num=nx)
-        lats = np.linspace(-79.875, 79.875, num=ny)
-    else:
-        lons = np.arange(nx)
-        lats = np.arange(ny)
+    field = field.astype(coasttype)
 
     plt.figure()
     plt.contourf(lons, lats, field)
+    # plt.xlim([np.min(lons), np.max(lons)])
+    # plt.ylim([np.max(lats), np.min(lats)])
     plt.title("Locations of coasts")
     plt.xlabel("longitude")
     plt.ylabel("latitude")
@@ -159,7 +158,7 @@ def showCoast(fields, type=np.bool, origin="GlobCurrent", show=None, savefile=No
         plt.show()
 
 
-def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfield=None, coastorigin="GlobCurrent", coasttype=np.bool):
+def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, coasttype=np.bool):
     """ Plot locations of particles in subdata or data from stuckparticles_analysis.
     Assuming that the first three values are (id, lon, lat).
     """
@@ -172,24 +171,15 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         print "plotLocations(): not enough data."
         initial = False
 
-    if coastfield is not None:
-        if len(np.shape(coastfield)) == 3 and np.shape(coastfield)[0] == 2:
-            field = np.sqrt(np.square(coastfield[0]) + np.square(coastfield[1]))
-        elif len(np.shape(coastfield)) == 2:
-            field = coastfield
+    if coastfields is not None:
+        if len(coastfields) == 4:
+            [field_coast_U, field_coast_V, lons, lats] = coastfields
         else:
-            print "plotLocations(): coastfield not in correct form"
-            coastfield = None
+            print "plotLocations(): 'coastfields' contains not enough information, skipping coasts"
+            coastfields = None
 
+        field = np.sqrt(np.square(field_coast_U) + np.square(field_coast_V))
         field = field.astype(coasttype)
-
-        ny, nx = np.shape(field)
-        if coastorigin == "GlobCurrent":
-            lons = np.linspace(-181.125, 181.125, num=nx)
-            lats = np.linspace(-79.875, 79.875, num=ny)
-        else:
-            lons = np.arange(nx)
-            lats = np.arange(ny)
 
 
     colors = ["red", "blue", "green", "pink", "orange", "purple"]
@@ -205,9 +195,10 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
             plt.plot(subdata[i][5], subdata[i][6], "o", markersize=1, color=colors[m])
             plt.plot([subdata[i][1], subdata[i][5]], [subdata[i][2], subdata[i][6]], "--", color=colors[m])
 
-    if coastfield is not None:
+    if coastfields is not None:
         plt.contourf(lons, lats, field, alpha=0.5, cmap="Greys")
-        # plt.colorbar()
+        # plt.xlim([np.min(lons), np.max(lons)])
+        # plt.ylim([np.max(lats), np.min(lats)])
 
     plt.grid()
     plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
@@ -290,8 +281,8 @@ def scatterStuckMoving(subdata, show=None, savefile=None, title=""):
     plt.plot(x, y, "--", color="red")
     plt.xlabel("days stuck")
     plt.ylabel("days moved")
-    plt.xlim([-2, max(time_moving+time_stuck)*1.05])
-    plt.ylim([-2, max(time_moving+time_stuck)*1.05])
+    plt.xlim([-0.1, max(time_moving+time_stuck)*1.05])
+    plt.ylim([-0.1, max(time_moving+time_stuck)*1.05])
     plt.title(title+"\n{} particles in plot".format(len(subdata)))
     plt.grid()
 

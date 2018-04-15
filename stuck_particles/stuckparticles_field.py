@@ -158,6 +158,10 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     vel_V = fieldset.V.data
     dims_U = vel_U.shape
     dims_V = vel_V.shape
+    lons_U = fieldset.U.grid.lon
+    lons_V = fieldset.V.grid.lon
+    lats_U = fieldset.U.grid.lat
+    lats_V = fieldset.V.grid.lat
 
     if factor == 0 and constant == 0:
         factor = True
@@ -177,6 +181,13 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
     else:
         print "createCoastVelocities(): dimensions of U.data and V.data are not 3, but {} and {}.".format(len(dims_U), len(dims_V))
         return
+
+    if np.any(lons_U != lons_V) or np.any(lats_U != lats_V):
+        print "createCoastVelocities(): grids of U and V are not the same."
+        return
+    else:
+        lons = lons_U
+        lats = lats_U
 
     field_coast_U = np.zeros([ny, nx])
     field_coast_V = np.zeros([ny, nx])
@@ -204,14 +215,14 @@ def createCoastVelocities(fieldset, factor=True, abs=True, constant=0):
         field_coast_U = field_coast_U.astype(np.bool)
         field_coast_V = field_coast_V.astype(np.bool)
 
-    return [field_coast_U, field_coast_V]
+    return [field_coast_U, field_coast_V, lons, lats]
 
 
 def addGlobCurrentCoast(fieldset, coastfields):
     """ Returns a new fieldset that results from
     fieldset + coastfields
     """
-    [field_coast_U, field_coast_V] = coastfields
+    [field_coast_U, field_coast_V, lons, lats] = coastfields
     new_fieldset = fieldset
 
     if np.shape(fieldset.U.data)[0] == np.shape(fieldset.V.data)[0]:
@@ -229,17 +240,19 @@ def addGlobCurrentCoast(fieldset, coastfields):
     return new_fieldset
 
 
-def exportCoastVelocities(field_coast_U, field_coast_V, filename):
+def exportCoastVelocities(coastfields, filename):
     """ Export fields as numpy-array-files """
+    [field_coast_U, field_coast_V, lons, lats] = coastfields
+
     if not isinstance(filename, str):
         print "exportCoastVelocities(): filename is not a string"
         return
-    np.savez_compressed(filename, coast_U=field_coast_U, coast_V=field_coast_V)
+    np.savez_compressed(filename, coast_U=field_coast_U, coast_V=field_coast_V, lons=lons, lats=lats)
     print "exportCoastVelocities(): Fields saved as " + filename
 
 def importCoastVelocities(filename):
     data = np.load(filename)
-    return data["coast_U"], data["coast_V"]
+    return [data["coast_U"], data["coast_V"], data["lons"], data["lats"]]
 
 
 def removeLandParticles(fieldset, particleset, show=False):
