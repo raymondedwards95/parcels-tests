@@ -236,7 +236,7 @@ def plotHistogram(subdata, width=1, show=None, savefile=None, title=""):
     time_stuck_red = np.trim_zeros(sorted(time_stuck, reverse=True))
 
     # n_bins = int(round((np.max(time_stuck+time_moving) - np.min(time_stuck+time_moving)) / width))
-    n_bins = np.arange(0, np.max(time_stuck+time_moving)+5, 5)
+    n_bins = np.arange(0, np.max(time_stuck+time_moving)+width, width)
 
     plt.figure()
     plt.hist(time_stuck_red, n_bins, facecolor="green", alpha=0.75, edgecolor='black', linewidth=0.1)

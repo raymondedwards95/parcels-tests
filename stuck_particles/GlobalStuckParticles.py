@@ -41,7 +41,7 @@ def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, field
 
     ## Find coasts
     coasts = stf.createCoastVelocities(fieldset=fset, factor=factor, abs=abs, constant=constant)
-    stf.exportCoastVelocities(coasts[0], coasts[1], savename+"coasts")
+    stf.exportCoastVelocities(coasts, savename+"coasts")
 
     ## Add coasts to fieldset
     fset = stf.addGlobCurrentCoast(fieldset=fset, coastfields=coasts)
