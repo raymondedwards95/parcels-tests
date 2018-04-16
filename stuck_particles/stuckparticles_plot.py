@@ -7,7 +7,8 @@ plotfunction: plotVelocity(vector, field="U", coords=None, show=None, savefile=N
 plotfunction: plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=None)
 plotfunction: showCoast(fields, type=np.bool, show=None, savefile=None, field="all")
 plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, coasttype=np.bool)
-plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None)
+plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None, title="")
+plotfunction: scatterStuckMoving(subdata, show=None, savefile=None, title="")
 """
 import numpy as np
 import math

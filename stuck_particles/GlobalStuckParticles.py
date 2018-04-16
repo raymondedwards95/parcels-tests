@@ -83,7 +83,7 @@ def GlobalStuckParticlesAdvection(simulation, particles, coasts, savename, field
     return sta.exportParticleData(fieldset=fset, particleset=pset, velocities=True, savefile=savename+"particle_data")
 
 
-def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=False, plot=False, histogram=False, show=False, locations=False, velocities=False, trajectory=False, scatter=False):
+def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=False, plot=False, histogram=False, show=False, locations=False, velocities=False, trajectory=False, scatter=False, title=""):
     """"""
     [time_stuck, time_moving] = parameters
 
@@ -118,15 +118,15 @@ def GlobalStuckParticlesAnalysis(parameters, savename, particledata=None, coast=
 
     ## Plots
     if plot:
-        stpl.plotLocations(subdata=subdata, title="Final locations of stuck particles", initial=False, show=show, savefile=savename+"final_locations", coastfield=coastfield)
+        stpl.plotLocations(subdata=subdata, initial=False, show=show, savefile=savename+"final_locations", coastfields=coastfield, title=title)
 
     ## histogram
     if histogram:
-        stpl.plotHistogram(subdata=subdata, width=5, show=show, savefile=savename+"histogram")
+        stpl.plotHistogram(subdata=subdata, width=5, show=show, savefile=savename+"histogram", title=title)
 
     ## scatter
     if scatter:
-        stpl.scatterStuckMoving(subdata=subdata, show=show, savefile=savename+"scatter")
+        stpl.scatterStuckMoving(subdata=subdata, show=show, savefile=savename+"scatter", title=title)
 
     return len(subdata)
 
