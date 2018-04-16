@@ -149,7 +149,7 @@ def printGridVelocity(subdata, flux=False, index=None):
     print ""
 
 
-def filterParticles(subdata, time_stuck=0., time_moving=0.):
+def filterParticles(subdata, time_stuck=None, time_moving=None):
     """ Function to find particles with (more/different) specific parameters
     using particles in 'subdata', created by extractStuckParticles().
     'time_stuck' and 'time_moving' are in days.
@@ -160,9 +160,19 @@ def filterParticles(subdata, time_stuck=0., time_moving=0.):
 
     new_data = []
 
-    for p in subdata:
-        if p[3] > time_stuck*24*60*60 and p[4] > time_moving*24*60*60:
-        # if p[3] >= time_stuck*24*60*60 and p[4] >= time_moving*24*60*60:
+    if time_stuck is not None or time_moving is not None:
+        if time_stuck is None:
+            time_stuck = 0
+        elif time_moving is None:
+            time_moving = 0
+
+        for p in subdata:
+            if p[3] > time_stuck*24*60*60 and p[4] > time_moving*24*60*60:
+            # if p[3] >= time_stuck*24*60*60 and p[4] >= time_moving*24*60*60:
+                new_data.append(p)
+
+    else:
+        for p in subdata:
             new_data.append(p)
 
     print "filterParticles(): New number of particles: {}. These are all stuck for at least {} days".format(len(new_data), time_stuck)

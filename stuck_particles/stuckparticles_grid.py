@@ -81,6 +81,8 @@ def getGridVelocity(fieldset, vector, method="data"):
         res = res0
     else:
         print "getGridVelocity(): Grid is not square, i.e. len(lons) != len(lats)"
+        print "getGridVelocity(): recieved lons:", lons
+        print "getGridVelocity(): recieved lats:", lats
         return
 
     u = np.zeros((res, res))
