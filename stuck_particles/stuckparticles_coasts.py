@@ -5,7 +5,7 @@ function: findCoasts(filelocation=None, fieldset=None, times=[0], indices={})
     stf.checkCoast1d
 function: exportCoasts(coastfields, filename)
 function: importCoasts(filename)
-function: addCoasts(fieldset, coastfields)
+function: addCoasts(fieldset, coastfields, constant=0.01)
     parcels.Field as Field
 kernelfunction: returnFromCoast(particle, fieldset, time, dt)
 """
@@ -94,9 +94,8 @@ def importCoasts(filename):
     return [data["north"], data["south"], data["east"], data["west"]]
 
 
-def addCoasts(fieldset, coastfields):
-    # factor? constant?
-    # [north, south, east, west] = coastfields
+def addCoasts(fieldset, coastfields, constant=0.01):
+    fieldset.add_constant("f_constant", constant)
 
     for [name, data, grid] in coastfields:
         new_field = Field(name, data, lon=grid.lon, lat=grid.lat, interp_method='nearest', allow_time_extrapolation=True, transpose=False)
@@ -106,13 +105,10 @@ def addCoasts(fieldset, coastfields):
 
 def returnFromCoast(particle, fieldset, time, dt):
     """ Kernel for pushing particles back from coast to ocean """
-    # factor = 0.
-    constant = 0.05
-
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
-    particle.lon += constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
-    particle.lat += constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    particle.lon += fset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += fset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
 
 
 def main():
