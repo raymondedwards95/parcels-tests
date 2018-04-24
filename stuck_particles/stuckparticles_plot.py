@@ -322,7 +322,7 @@ def plotCoasts(coasts, show=None, savefile=None):
     plt.title("Locations of coasts")
     plt.xlabel("longitude")
     plt.ylabel("latitude")
-    plt.colorbar()
+    # plt.colorbar()
     plt.grid()
 
 

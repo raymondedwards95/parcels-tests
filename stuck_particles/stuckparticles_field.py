@@ -4,7 +4,7 @@ function: checkField(fieldset, text=True)
     np.
 function: getIndicesGlobCurrent(lons, lats)
 function: getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False, full_load=False)
-    parcels.FieldSet
+    parcels.FieldSet as FieldSet
 function: checkCoast1d(fieldset, x, y, direction=None, time=0)
 function: createCoastVelocities(fieldset, factor=True, abs=True, constant=0)
     stg.absolute
@@ -19,13 +19,13 @@ function: removeLandParticles(fieldset, particleset, show=False)
 function: main()
     stpl.showCoast
 """
-from parcels import FieldSet
-
-import numpy as np
-
 import stuckparticles_particles as stp
 import stuckparticles_general as stg
 import stuckparticles_grid as stgr
+
+from parcels import FieldSet
+
+import numpy as np
 
 
 def checkField(fieldset, text=True):

@@ -1,13 +1,21 @@
 """ Functions and kernels for particles near coasts
-
-
+function: findCoasts(filelocation=None, fieldset=None, times=[0], indices={})
+    np.
+    stf.getFieldsetGlobCurrent
+    stf.checkCoast1d
+function: exportCoasts(coastfields, filename)
+function: importCoasts(filename)
+function: addCoasts(fieldset, coastfields)
+    parcels.Field as Field
+kernelfunction: returnFromCoast(particle, fieldset, time, dt)
 """
-from parcels import Field
-
 import stuckparticles_field as stf
 import stuckparticles_plot as stpl
 
+from parcels import Field
+
 import numpy as np
+
 
 def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}):
     """ Returns 4 2-d arrays which contain information about locations of
@@ -98,7 +106,7 @@ def addCoasts(fieldset, coastfields):
 
 def returnFromCoast(particle, fieldset, time, dt):
     """ Kernel for pushing particles back from coast to ocean """
-    factor = 0.
+    # factor = 0.
     constant = 1.
 
     lon, lat, depth = particle.lon, particle.lat, particle.depth
