@@ -50,20 +50,20 @@ def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}):
         # Start with N/S
         for i in range(f_n.shape[-1]):
             for j in range(1, f_n.shape[-2]-1):
-                check = stf.checkCoast1d(fieldset, i, j, direction="x")
+                check = stf.checkCoast1d(fieldset, i, j, direction="y")
                 if check[0]:
-                    f_n[t, j, i] = True
-                elif check[1]:
                     f_s[t, j, i] = True
+                elif check[1]:
+                    f_n[t, j, i] = True
 
         # Do the same for E/W
         for i in range(f_e.shape[-1]):
             for j in range(1, f_e.shape[-2]-1):
-                check = stf.checkCoast1d(fieldset, i, j, direction="y")
+                check = stf.checkCoast1d(fieldset, i, j, direction="x")
                 if check[0]:
-                    f_e[t, j, i] = True
-                elif check[1]:
                     f_w[t, j, i] = True
+                elif check[1]:
+                    f_e[t, j, i] = True
 
     f_n = np.mean(f_n, axis=0)
     f_s = np.mean(f_s, axis=0)
@@ -107,14 +107,12 @@ def addCoasts(fieldset, coastfields):
 def returnFromCoast(particle, fieldset, time, dt):
     """ Kernel for pushing particles back from coast to ocean """
     # factor = 0.
-    constant = 1.
+    constant = 0.05
 
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
     particle.lon += constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
     particle.lat += constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
-
-    # particle.lon += -np.multipy(tmp_w, fieldset.U)
 
 
 def main():
