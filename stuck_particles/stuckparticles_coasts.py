@@ -7,6 +7,14 @@ function: exportCoasts(coastfields, filename)
 function: importCoasts(filename)
 function: addCoasts(fieldset, coastfields, constant=0.01)
     parcels.Field as Field
+kernelfunction: returnFromCoast_A(particle, fieldset, time, dt)
+    math.cos
+    math.pi
+kernelfunction: returnFromCoast_B(particle, fieldset, time, dt)
+kernelfunction: returnFromCoast_C(particle, fieldset, time, dt)
+    math.cos
+    math.pi
+kernelfunction: returnFromCoast_D(particle, fieldset, time, dt)
 kernelfunction: returnFromCoast(particle, fieldset, time, dt)
 """
 import stuckparticles_field as stf
@@ -15,6 +23,7 @@ import stuckparticles_plot as stpl
 from parcels import Field
 
 import numpy as np
+import math
 
 
 def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}):
@@ -103,8 +112,54 @@ def addCoasts(fieldset, coastfields, constant=0.01):
         print "addCoasts(): '{}' added to fieldset".format(name)
 
 
+def returnFromCoast_A(particle, fieldset, time, dt):
+    """ Kernel for pushing particles back from coast to ocean
+    Assuming constant as 'velocity' in m/s
+    Converting to lon/lat by using a simple conversion
+    """
+    lon, lat, depth = particle.lon, particle.lat, particle.depth
+
+    particle.lon += dt * fset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += dt * fset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+
+
+def returnFromCoast_B(particle, fieldset, time, dt):
+    """ Kernel for pushing particles back from coast to ocean
+    Assuming constant as 'velocity' in deg/s
+    """
+    lon, lat, depth = particle.lon, particle.lat, particle.depth
+
+    particle.lon += dt * fset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += dt * fset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+
+
+def returnFromCoast_C(particle, fieldset, time, dt):
+    """ Kernel for pushing particles back from coast to ocean
+    Assuming constant as 'displacement' in m
+    Converting to lon/lat by using a simple conversion
+    """
+    lon, lat, depth = particle.lon, particle.lat, particle.depth
+
+    particle.lon += fset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += fset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+
+
+def returnFromCoast_D(particle, fieldset, time, dt):
+    """ Kernel for pushing particles back from coast to ocean
+    Assuming constant as 'displacement' in deg
+    """
+    lon, lat, depth = particle.lon, particle.lat, particle.depth
+
+    particle.lon += fset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += fset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+
+
 def returnFromCoast(particle, fieldset, time, dt):
-    """ Kernel for pushing particles back from coast to ocean """
+    """ Kernel for pushing particles back from coast to ocean
+    Assuming constant as 'displacement' in deg
+    Used for compatibility
+    This is the same as returnFromCoast_D
+    """
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
     particle.lon += fset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
@@ -119,8 +174,8 @@ def main():
     fset = stf.getFieldsetGlobCurrent(filelocation="GlobCurrent/")
 
     # find coasts (also try export and import)
-    # coasts = findCoasts(filelocation="GlobCurrent/")
-    # exportCoasts(coasts, filename="coasts-globcurrent")
+    coasts = findCoasts(filelocation="GlobCurrent/")
+    exportCoasts(coasts, filename="coasts-globcurrent")
     coasts = importCoasts(filename="coasts-globcurrent.npz")
 
     # add coasts to fieldset
