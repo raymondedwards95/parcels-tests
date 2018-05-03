@@ -88,6 +88,7 @@ def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}):
 
 
 def exportCoasts(coastfields, filename):
+    """ Save coastfields from findCoasts() to a file"""
     [north, south, east, west] = coastfields
 
     if not isinstance(filename, str):
@@ -99,17 +100,20 @@ def exportCoasts(coastfields, filename):
 
 
 def importCoasts(filename):
+    """ Import coastfields exported by exportCoasts() """
     data = np.load(filename)
     return [data["north"], data["south"], data["east"], data["west"]]
 
 
-def addCoasts(fieldset, coastfields, constant=0.01):
+def addCoasts(fieldset, coastfields, constant=0.01, show=False):
+    """ Add coastfields from findCoasts() or importCoasts() and a constant to fieldset """
     fieldset.add_constant("f_constant", constant)
 
     for [name, data, grid] in coastfields:
         new_field = Field(name, data, lon=grid.lon, lat=grid.lat, interp_method='nearest', allow_time_extrapolation=True, transpose=False)
         fieldset.add_field(new_field)
-        print "addCoasts(): '{}' added to fieldset".format(name)
+        if show:
+            print "addCoasts(): '{}' added to fieldset".format(name)
 
 
 def returnFromCoast_A(particle, fieldset, time, dt):
