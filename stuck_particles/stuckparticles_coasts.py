@@ -119,8 +119,8 @@ def returnFromCoast_A(particle, fieldset, time, dt):
     """
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
-    particle.lon += dt * fset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
-    particle.lat += dt * fset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    particle.lon += dt * fieldset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += dt * fieldset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
 
 
 def returnFromCoast_B(particle, fieldset, time, dt):
@@ -129,8 +129,8 @@ def returnFromCoast_B(particle, fieldset, time, dt):
     """
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
-    particle.lon += dt * fset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
-    particle.lat += dt * fset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    particle.lon += dt * fieldset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += dt * fieldset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
 
 
 def returnFromCoast_C(particle, fieldset, time, dt):
@@ -140,8 +140,8 @@ def returnFromCoast_C(particle, fieldset, time, dt):
     """
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
-    particle.lon += fset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
-    particle.lat += fset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    particle.lon += fieldset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += fieldset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
 
 
 def returnFromCoast_D(particle, fieldset, time, dt):
@@ -150,8 +150,8 @@ def returnFromCoast_D(particle, fieldset, time, dt):
     """
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
-    particle.lon += fset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
-    particle.lat += fset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    particle.lon += fieldset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += fieldset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
 
 
 def returnFromCoast(particle, fieldset, time, dt):
@@ -162,8 +162,8 @@ def returnFromCoast(particle, fieldset, time, dt):
     """
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
-    particle.lon += fset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
-    particle.lat += fset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    particle.lon += fieldset.f_constant * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += fieldset.f_constant * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
 
 
 def main():

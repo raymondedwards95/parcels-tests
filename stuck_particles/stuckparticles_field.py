@@ -11,7 +11,7 @@ function: createCoastVelocities(fieldset, factor=True, abs=True, constant=0)
 function: addGlobCurrentCoast(fieldset, coastfields)
 function: exportCoastVelocities(field_coast_U, field_coast_V, filename)
 function: importCoastVelocities(filename)
-function: removeLandParticles(fieldset, particleset, show=False)
+function: removeLandParticles(fieldset=None, particleset, show=False, filename=None, indices={})
     stf.getFieldsetGlobCurrent
     stp.particleCoords
     stgr.getGridPoints
@@ -272,16 +272,19 @@ def importCoastVelocities(filename):
     return [data["coast_U"], data["coast_V"], data["lons"], data["lats"]]
 
 
-def removeLandParticles(fieldset=None, particleset, show=False, filename=None, indices=True):
+def removeLandParticles(fieldset=None, particleset=None, show=False, filename=None, indices={}):
     """ Remove particles that are on land.
     Particles on land are particles with velocities 0 at
     grid points around.
     """
-    if filelocation is None and fieldset is None:
+    if particleset is None:
+        print "removeLandParticles(): no particles found, returning"
+        return
+    if filename is None and fieldset is None:
         print "removeLandParticles(): no fields found, returning"
         return
     elif filename is not None:
-        fieldset = stf.getFieldsetGlobCurrent(filename, indices=indices, full_load=True)
+        fieldset = getFieldsetGlobCurrent(filename, indices=indices, full_load=True)
 
     print "removeLandParticles(): there are {} particles in the ParticleSet".format(len(particleset))
     list_coords = stp.particleCoords(particleset)
