@@ -7,6 +7,7 @@ function: exportCoasts(coastfields, filename)
 function: importCoasts(filename)
 function: addCoasts(fieldset, coastfields, constant=0.01)
     parcels.Field as Field
+function: convertCoastFields(fieldset=None, coastfields=None)
 kernelfunction: returnFromCoast_A(particle, fieldset, time, dt)
     math.cos
     math.pi
@@ -116,6 +117,53 @@ def addCoasts(fieldset, coastfields, constant=0.01, show=False):
             print "addCoasts(): '{}' added to fieldset".format(name)
 
 
+def convertCoastFields(fieldset=None, coastfields=None):
+    """ Convert coastfields to a format used by plots """
+    #[data["coast_U"], data["coast_V"], data["lons"], data["lats"]]
+    if fieldset:
+        field_coast_V = (fieldset.F_N.data + fieldset.F_S.data).astype(np.bool)
+        field_coast_U = (fieldset.F_E.data + fieldset.F_W.data).astype(np.bool)
+
+        if fieldset.F_N.grid == fieldset.F_W.grid:
+            lons = fieldset.F_N.grid.lon
+            lats = fieldset.F_N.grid.lat
+        else:
+            # print "convertCoastFields(): grid is not supported."
+            # return
+            print "convertCoastFields(): grid is not supported, trying to continue"
+            lons = fieldset.F_N.grid.lon
+            lats = fieldset.F_N.grid.lat
+
+        return [field_coast_U, field_coast_V, lons, lats]
+
+    elif coastfields:
+        [north, south, east, west] = coastfields
+
+        [n_n, f_n, grid_n] = north
+        [n_s, f_s, grid_s] = south
+        [n_e, f_e, grid_e] = east
+        [n_w, f_w, grid_w] = west
+
+        field_coast_V = (f_n + f_s).astype(np.bool)
+        field_coast_U = (f_e + f_w).astype(np.bool)
+
+        if grid_n == grid_e:
+            lons = grid_n.lon
+            lats = grid_n.lat
+        else:
+            # print "convertCoastFields(): grid is not supported."
+            # return
+            print "convertCoastFields(): grid is not supported, trying to continue"
+            lons = grid_n.lon
+            lats = grid_n.lat
+
+        return [field_coast_U, field_coast_V, lons, lats]
+
+    else:
+        print "convertCoastFields(): No fields found"
+        return
+
+
 def returnFromCoast_A(particle, fieldset, time, dt):
     """ Kernel for pushing particles back from coast to ocean
     Assuming constant as 'velocity' in m/s
@@ -181,6 +229,7 @@ def main():
     coasts = findCoasts(filelocation="GlobCurrent/")
     exportCoasts(coasts, filename="coasts-globcurrent")
     coasts = importCoasts(filename="coasts-globcurrent.npz")
+    print "coasts:", coasts
 
     # add coasts to fieldset
     addCoasts(fset, coasts)

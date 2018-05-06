@@ -160,7 +160,7 @@ def showCoast(coastfields, coasttype=np.bool, show=None, savefile=None, field="a
         plt.show()
 
 
-def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, coasttype=np.bool):
+def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool):
     """ Plot locations of particles in subdata or data from stuckparticles_analysis.
     Assuming that the first three values are (id, lon, lat).
     """
@@ -203,7 +203,8 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         # plt.ylim([np.max(lats), np.min(lats)])
 
     plt.grid()
-    plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
+    if legend:
+        plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.title(title)
