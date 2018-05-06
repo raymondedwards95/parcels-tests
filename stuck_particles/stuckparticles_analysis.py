@@ -12,10 +12,10 @@ function: printGridVelocity(subdata, flux=False, index=None)
     stgr.checkFlux
 function: filterParticles(subdata, time_stuck=0., time_moving=0.)
 """
+import stuckparticles_grid as stgr
+
 import numpy as np
 import math
-
-import stuckparticles_grid as stgr
 
 
 def exportParticleData(fieldset, particleset, velocities=False, savefile=None):

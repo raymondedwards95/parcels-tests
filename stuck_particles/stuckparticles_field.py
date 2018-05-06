@@ -3,15 +3,16 @@
 function: checkField(fieldset, text=True)
     np.
 function: getIndicesGlobCurrent(lons, lats)
-function: getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False)
-    parcels.FieldSet
+function: getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False, full_load=False)
+    parcels.FieldSet as FieldSet
 function: checkCoast1d(fieldset, x, y, direction=None, time=0)
 function: createCoastVelocities(fieldset, factor=True, abs=True, constant=0)
     stg.absolute
 function: addGlobCurrentCoast(fieldset, coastfields)
 function: exportCoastVelocities(field_coast_U, field_coast_V, filename)
 function: importCoastVelocities(filename)
-function: removeLandParticles(fieldset, particleset, show=False)
+function: removeLandParticles(fieldset=None, particleset, show=False, filename=None, indices={})
+    stf.getFieldsetGlobCurrent
     stp.particleCoords
     stgr.getGridPoints
     stgr.getGridVelocity
@@ -19,13 +20,13 @@ function: removeLandParticles(fieldset, particleset, show=False)
 function: main()
     stpl.showCoast
 """
-from parcels import FieldSet
-
-import numpy as np
-
 import stuckparticles_particles as stp
 import stuckparticles_general as stg
 import stuckparticles_grid as stgr
+
+from parcels import FieldSet
+
+import numpy as np
 
 
 def checkField(fieldset, text=True):
@@ -81,7 +82,7 @@ def getIndicesGlobCurrent(lons, lats):
     return indices
 
 
-def getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False):
+def getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False, full_load=False):
     """ Create fieldset from GlobCurrent data """
     filenames = {"U": filelocation+"*.nc",
                  "V": filelocation+"*.nc"}
@@ -90,7 +91,7 @@ def getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False):
     dim = {"lat": "lat",
            "lon": "lon",
            "time": "time"}
-    fieldset = FieldSet.from_netcdf(filenames, variables=var, dimensions=dim, indices=indices, allow_time_extrapolation=time_extrapolation)
+    fieldset = FieldSet.from_netcdf(filenames, variables=var, dimensions=dim, indices=indices, allow_time_extrapolation=time_extrapolation, full_load=full_load)
 
     print "getFieldsetGlobCurrent(): Success! Fieldset imported."
     return fieldset
@@ -110,8 +111,16 @@ def checkCoast1d(fieldset, x, y, direction=None, time=0):
         return coast_x, coast_y
 
     elif direction == "x":
+        dims_U = fieldset.U.data.shape
+
         vector_U = fieldset.U.data[time, y, x-1:x+2]
+        # vector_U = np.zeros(3)
+        # vector_U[0] = fieldset.U.data[time, y, x-1%dims_U[-1]]
+        # vector_U[1] = fieldset.U.data[time, y, x%dims_U[-1]]
+        # vector_U[2] = fieldset.U.data[time, y, x+1%dims_U[-1]]
+        #
         vector_U_trim = np.trim_zeros(vector_U)
+
         if len(vector_U_trim) == 1:
             # Checks if vector contains 2 zeros and one non-zero
             # and if the non_zero is at the begin or end
@@ -125,8 +134,16 @@ def checkCoast1d(fieldset, x, y, direction=None, time=0):
             return [False, False]
 
     elif direction == "y":
+        dims_V = fieldset.V.data.shape
+
         vector_V = fieldset.V.data[time, y-1:y+2, x]
+        # vector_V = np.zeros(3)
+        # vector_V[0] = fieldset.V.data[time, y-1%dims[-2], x-1]
+        # vector_V[1] = fieldset.V.data[time, y%dims[-2], x]
+        # vector_V[2] = fieldset.V.data[time, y+1%dims[-2], x]
+
         vector_V_trim = np.trim_zeros(vector_V)
+
         if len(vector_V_trim) == 1:
             # Checks if vector contains 2 zeros and one non-zero
             # and if the non_zero is at the begin or end
@@ -255,11 +272,20 @@ def importCoastVelocities(filename):
     return [data["coast_U"], data["coast_V"], data["lons"], data["lats"]]
 
 
-def removeLandParticles(fieldset, particleset, show=False):
+def removeLandParticles(fieldset=None, particleset=None, show=False, filename=None, indices={}):
     """ Remove particles that are on land.
     Particles on land are particles with velocities 0 at
     grid points around.
     """
+    if particleset is None:
+        print "removeLandParticles(): no particles found, returning"
+        return
+    if filename is None and fieldset is None:
+        print "removeLandParticles(): no fields found, returning"
+        return
+    elif filename is not None:
+        fieldset = getFieldsetGlobCurrent(filename, indices=indices, full_load=True)
+
     print "removeLandParticles(): there are {} particles in the ParticleSet".format(len(particleset))
     list_coords = stp.particleCoords(particleset)
     n = 0

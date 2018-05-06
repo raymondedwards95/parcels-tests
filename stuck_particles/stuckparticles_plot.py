@@ -9,6 +9,7 @@ plotfunction: showCoast(fields, type=np.bool, show=None, savefile=None, field="a
 plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, coasttype=np.bool)
 plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None, title="")
 plotfunction: scatterStuckMoving(subdata, show=None, savefile=None, title="")
+plotfunction: plotCoast(coasts, show=None, savefile=None)
 """
 import numpy as np
 import math
@@ -159,7 +160,7 @@ def showCoast(coastfields, coasttype=np.bool, show=None, savefile=None, field="a
         plt.show()
 
 
-def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, coasttype=np.bool):
+def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool):
     """ Plot locations of particles in subdata or data from stuckparticles_analysis.
     Assuming that the first three values are (id, lon, lat).
     """
@@ -202,7 +203,8 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         # plt.ylim([np.max(lats), np.min(lats)])
 
     plt.grid()
-    plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
+    if legend:
+        plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.title(title)
@@ -293,4 +295,41 @@ def scatterStuckMoving(subdata, show=None, savefile=None, title=""):
         print "scatterStuckMoving(): plot saved as '{}'".format(savefile)
     if show:
         print "scatterStuckMoving(): showing plot"
+        plt.show()
+
+
+def plotCoasts(coasts, show=None, savefile=None):
+    if savefile is None:
+        show = True
+    if show is None and savefile is not None:
+        show = False
+
+    [north, south, east, west] = coasts
+
+    # add data
+    field_N = north[1].astype(np.bool)
+    field_S = south[1].astype(np.bool)
+    field_E = east[1].astype(np.bool)
+    field_W = west[1].astype(np.bool)
+
+    plt.figure()
+
+    # should change to contourf
+    plt.contour(north[2].lon, north[2].lat, field_N)
+    plt.contour(south[2].lon, south[2].lat, field_S)
+    plt.contour(east[2].lon, east[2].lat, field_E)
+    plt.contour(west[2].lon, west[2].lat, field_W)
+
+    plt.title("Locations of coasts")
+    plt.xlabel("longitude")
+    plt.ylabel("latitude")
+    # plt.colorbar()
+    plt.grid()
+
+
+    if savefile is not None:
+        plt.savefig(savefile)
+        print "plotCoasts(): plot saved as '{}'".format(savefile)
+    if show:
+        print "plotCoasts(): showing plot"
         plt.show()

@@ -104,3 +104,5 @@ ENV/
 *.zip
 *.npz
 *.ipynb
+stuck_particles/peninsula_fieldset.py
+*.sh

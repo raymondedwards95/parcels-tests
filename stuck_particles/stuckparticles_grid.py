@@ -7,9 +7,9 @@ function: calculateFlux(vector)
     spg.globalDistance
 function: checkFlux(fluxes)
 """
-import numpy as np
-
 import stuckparticles_general as spg
+
+import numpy as np
 
 
 def getGridPoints(fieldset, coords, radius=1):

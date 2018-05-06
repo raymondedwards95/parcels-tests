@@ -1,11 +1,11 @@
 """ Classes and kernels for observing particles
 
 class: stuckParticle
-    parcels.JITParticle
-    parcels.ScipyParticle
-    parcels.Variable
+    parcels.JITParticle as JITParticle
+    parcels.ScipyParticle as ScipyParticle
+    parcels.Variable as Variable
     np.
-    operator.attrgetter
+    operator.attrgetter as attrgetter
 kernelfunction: checkVelocity(particle, fieldset, time, dt)
     math.
 """
