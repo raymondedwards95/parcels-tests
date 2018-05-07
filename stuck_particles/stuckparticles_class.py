@@ -8,6 +8,11 @@ class: stuckParticle
     operator.attrgetter as attrgetter
 kernelfunction: checkVelocity(particle, fieldset, time, dt)
     math.
+class: CoastParticle
+kernelfunction: particleOnCoast(particle, fieldset, time, dt)
+class: stuckCoastParticle
+    stuckParticle
+    CoastParticle
 """
 from parcels import JITParticle, ScipyParticle, Variable
 
@@ -22,6 +27,8 @@ class stuckParticle(JITParticle):
 
     new variables:
     * time_stuck - time since last large movement/velocity
+    * time_moving - time since last small movement/velocity
+    * time_simulated - total time since start (should be equal to time of particle)
 
     * last_distance - last traveled distance
     * last_velocity - last velocity
@@ -48,6 +55,8 @@ class stuckParticle(JITParticle):
     prev_lon = Variable('prev_lon', dtype=np.float32, to_write=False, initial=attrgetter('lon'))
     prev_lat = Variable('prev_lat', dtype=np.float32, to_write=False, initial=attrgetter('lat'))
     prev_time = Variable('prev_time', dtype=np.float32, to_write=False, initial=attrgetter('time'))
+
+    particle_class = Variable('particle_class', initial="StuckParticle", dtype=np.str, to_write=False)
 
 
 def checkVelocity(particle, fieldset, time, dt):
@@ -90,3 +99,74 @@ def checkVelocity(particle, fieldset, time, dt):
     particle.prev_lat = particle.lat
 
     particle.time_simulated += dt
+
+
+class CoastParticle(JITParticle):
+    """ Particle class to track if a particle gets on the coast
+
+    new variables:
+    * total_time_coast - total time on coast
+    * current_time_coast - current time on coast
+
+    * total_time_ocean - total time in ocean
+    * current_time_ocean - current time in ocean
+
+    * number_on_coast - number of times on coast (ocean -> coast)
+    * number_on_ocean - number of times released from coast (coast -> ocean)
+
+    * time_simulated - total time since start (should be equal to time of particle)
+    """
+    total_time_coast = Variable('total_time_coast', initial=0., dtype=np.float32, to_write=True)
+    current_time_coast = Variable('current_time_coast', initial=0., dtype=np.float32, to_write=True)
+
+    total_time_ocean = Variable('total_time_ocean', initial=0., dtype=np.float32, to_write=True)
+    current_time_ocean = Variable('current_time_ocean', initial=0., dtype=np.float32, to_write=True)
+
+    number_on_coast = Variable('number_on_coast', initial=0, dtype=np.int32, to_write=True)
+    number_on_ocean = Variable('number_on_ocean', initial=0, dtype=np.int32, to_write=True)
+
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=True)
+
+    particle_class = Variable('particle_class', initial="CoastParticle", dtype=np.str, to_write=False)
+
+
+def particleOnCoast(particle, fieldset, time, dt):
+    """ Function to use as kernel for CoastParticle()
+    and coastfield F_N, F_S, F_E, F_W """
+
+    lon, lat, depth = particle.lon, particle.lat, particle.depth
+
+    # check if particle on coast:
+    if (fieldset.F_N[time, lon, lat, depth] or
+            fieldset.F_S[time, lon, lat, depth] or
+            fieldset.F_E[time, lon, lat, depth] or
+            fieldset.F_W[time, lon, lat, depth]):
+
+        if particle.current_time_coast == 0.:
+            particle.number_on_coast += 1
+
+        particle.total_time_coast += dt
+        particle.current_time_coast += dt
+
+        if particle.current_time_ocean > 0:
+            particle.current_time_ocean = 0.
+
+    else:
+        if particle.current_time_ocean == 0.:
+            particle.number_on_ocean += 1
+
+        particle.total_time_ocean += dt
+        particle.current_time_ocean += dt
+
+        if particle.current_time_coast > 0:
+            particle.current_time_coast = 0.
+
+    particle.time_simulated += dt
+
+
+class StuckCoastParticle(stuckParticle, CoastParticle):
+    """ Combine both stuckParticle and CoastParticle classes """
+
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)
+
+    particle_class = Variable('particle_class', initial="StuckCoastParticle", dtype=np.str, to_write=False)
