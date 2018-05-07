@@ -82,7 +82,7 @@ def getIndicesGlobCurrent(lons, lats):
     return indices
 
 
-def getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=False, full_load=False):
+def getFieldsetGlobCurrent(filelocation, indices={}, time_extrapolation=True, full_load=False):
     """ Create fieldset from GlobCurrent data """
     filenames = {"U": filelocation+"*.nc",
                  "V": filelocation+"*.nc"}

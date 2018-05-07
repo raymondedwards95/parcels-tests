@@ -56,7 +56,7 @@ class stuckParticle(JITParticle):
     prev_lat = Variable('prev_lat', dtype=np.float32, to_write=False, initial=attrgetter('lat'))
     prev_time = Variable('prev_time', dtype=np.float32, to_write=False, initial=attrgetter('time'))
 
-    particle_class = Variable('particle_class', initial="StuckParticle", dtype=np.str, to_write=False)
+    # particle_class = Variable('particle_class', initial="StuckParticle", dtype=np.str, to_write=False)
 
 
 def checkVelocity(particle, fieldset, time, dt):
@@ -112,7 +112,7 @@ class CoastParticle(JITParticle):
     * current_time_ocean - current time in ocean
 
     * number_on_coast - number of times on coast (ocean -> coast)
-    * number_on_ocean - number of times released from coast (coast -> ocean)
+    * number_in_ocean - number of times released from coast (coast -> ocean)
 
     * time_simulated - total time since start (should be equal to time of particle)
     """
@@ -123,24 +123,26 @@ class CoastParticle(JITParticle):
     current_time_ocean = Variable('current_time_ocean', initial=0., dtype=np.float32, to_write=True)
 
     number_on_coast = Variable('number_on_coast', initial=0, dtype=np.int32, to_write=True)
-    number_on_ocean = Variable('number_on_ocean', initial=0, dtype=np.int32, to_write=True)
+    number_in_ocean = Variable('number_in_ocean', initial=0, dtype=np.int32, to_write=True)
+    initial_location = Variable('initial_location', initial=0, dtype=np.int32, to_write=True)
 
     time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=True)
 
-    particle_class = Variable('particle_class', initial="CoastParticle", dtype=np.str, to_write=False)
+    # particle_class = Variable('particle_class', initial="CoastParticle", dtype=np.str, to_write=False)
 
 
 def particleOnCoast(particle, fieldset, time, dt):
     """ Function to use as kernel for CoastParticle()
     and coastfield F_N, F_S, F_E, F_W """
 
-    lon, lat, depth = particle.lon, particle.lat, particle.depth
-
     # check if particle on coast:
-    if (fieldset.F_N[time, lon, lat, depth] or
-            fieldset.F_S[time, lon, lat, depth] or
-            fieldset.F_E[time, lon, lat, depth] or
-            fieldset.F_W[time, lon, lat, depth]):
+    if (fieldset.F_N[time, particle.lon, particle.lat, particle.depth] or
+            fieldset.F_S[time, particle.lon, particle.lat, particle.depth] or
+            fieldset.F_E[time, particle.lon, particle.lat, particle.depth] or
+            fieldset.F_W[time, particle.lon, particle.lat, particle.depth]):
+
+        if particle.number_on_coast == 0 and particle.number_in_ocean == 0:
+            particle.initial_location = 1
 
         if particle.current_time_coast == 0.:
             particle.number_on_coast += 1
@@ -152,8 +154,11 @@ def particleOnCoast(particle, fieldset, time, dt):
             particle.current_time_ocean = 0.
 
     else:
+        if particle.number_on_coast == 0 and particle.number_in_ocean == 0:
+            particle.initial_location = 0
+
         if particle.current_time_ocean == 0.:
-            particle.number_on_ocean += 1
+            particle.number_in_ocean += 1
 
         particle.total_time_ocean += dt
         particle.current_time_ocean += dt
@@ -169,4 +174,4 @@ class StuckCoastParticle(stuckParticle, CoastParticle):
 
     time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)
 
-    particle_class = Variable('particle_class', initial="StuckCoastParticle", dtype=np.str, to_write=False)
+    # particle_class = Variable('particle_class', initial="StuckCoastParticle", dtype=np.str, to_write=False)

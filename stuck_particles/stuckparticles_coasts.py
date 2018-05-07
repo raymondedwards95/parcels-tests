@@ -1,11 +1,11 @@
 """ Functions and kernels for particles near coasts
-function: findCoasts(filelocation=None, fieldset=None, times=[0], indices={})
+function: findCoasts(filelocation=None, fieldset=None, times=[0], indices={}, skip_antarctic=True)
     np.
     stf.getFieldsetGlobCurrent
     stf.checkCoast1d
 function: exportCoasts(coastfields, filename)
 function: importCoasts(filename)
-function: addCoasts(fieldset, coastfields, constant=0.01)
+function: addCoasts(fieldset, coastfields, constant=0.00, total_field=True)
     parcels.Field as Field
 function: convertCoastFields(fieldset=None, coastfields=None)
 kernelfunction: returnFromCoast_A(particle, fieldset, time, dt)
@@ -27,11 +27,13 @@ import numpy as np
 import math
 
 
-def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}):
+def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}, skip_antarctic=True):
     """ Returns 4 2-d arrays which contain information about locations of
     coasts.
     Example: first array (N) is zero everywhere except for points that have
     ocean at the point north of it.
+
+    Use skip_antarctic=True to remove non-existent coastlines at lat = -70 deg
     """
     if filelocation is None and fieldset is None:
         print "findCoasts(): no fields found, returning"
@@ -80,6 +82,10 @@ def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}):
     f_e = np.mean(f_e, axis=0)
     f_w = np.mean(f_w, axis=0)
 
+    if skip_antarctic:
+        for i in range(f_n.shape[-1]):
+            f_n[39, i] = False
+
     north = ["F_N", f_n, grid_n]
     south = ["F_S", f_s, grid_s]
     east = ["F_E", f_e, grid_e]
@@ -106,8 +112,11 @@ def importCoasts(filename):
     return [data["north"], data["south"], data["east"], data["west"]]
 
 
-def addCoasts(fieldset, coastfields, constant=0.01, show=False):
-    """ Add coastfields from findCoasts() or importCoasts() and a constant to fieldset """
+def addCoasts(fieldset, coastfields, constant=0.00, show=False, total_field=True):
+    """ Add coastfields from findCoasts() or importCoasts() and
+    a constant to fieldset. These have names 'F_N', 'F_S', 'F_E', 'F_W'.
+    If total_field is True, also add the sum of all coastfields, named 'F_all'.
+    """
     fieldset.add_constant("f_constant", constant)
 
     for [name, data, grid] in coastfields:
@@ -115,6 +124,35 @@ def addCoasts(fieldset, coastfields, constant=0.01, show=False):
         fieldset.add_field(new_field)
         if show:
             print "addCoasts(): '{}' added to fieldset".format(name)
+
+    if total_field:
+        name = "F_all"
+
+        [north, south, east, west] = coastfields
+
+        [n_n, f_n, grid_n] = north
+        [n_s, f_s, grid_s] = south
+        [n_e, f_e, grid_e] = east
+        [n_w, f_w, grid_w] = west
+
+        if grid_n == grid_e:
+            lons = grid_n.lon
+            lats = grid_n.lat
+        else:
+            # print "convertCoastFields(): grid is not supported."
+            # return
+            print "addCoasts(): grids of all given fields are different, trying to continue"
+            lons = grid_n.lon
+            lats = grid_n.lat
+
+        if np.shape(f_n) == np.shape(f_s) == np.shape(f_e) == np.shape(f_w):
+            data = f_n + f_s + f_e + f_w
+            new_field = Field(name, data, lon=lons, lat=lats, interp_method='nearest', allow_time_extrapolation=True, transpose=False)
+            fieldset.add_field(new_field)
+            if show:
+                print "addCoasts(): '{}' added to fieldset".format(name)
+        else:
+            print "addCoasts(): cannot create {}, source fields have different shapes".format(name)
 
 
 def convertCoastFields(fieldset=None, coastfields=None):
