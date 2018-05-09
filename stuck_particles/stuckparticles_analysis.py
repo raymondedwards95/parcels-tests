@@ -20,15 +20,50 @@ import math
 
 def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
     """ Export data per particle:
-    id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, time_simulated
+
+    * stuckParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, time_simulated
+    * CoastParticle: id, lon, lat, time, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
+    * stuckCoastParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
 
     if velocities == true: also export
     grid_u, grid_v, grid_lons, grid_lats, grid_depth, grid_time
     """
+    if len(particleset) == 0:
+        print "exportParticleData(): no particles in 'particleset', returning"
+        return
+
+    # determine class of particles
+    p = particleset[0]
+    try:
+        if p.time_stuck:
+            c_stuckParticle = True
+            print "exportParticleData(): 'particleset' contains stuckParticle-data"
+        else:
+            c_stuckParticle = False
+    except:
+        c_stuckParticle = False
+
+    try:
+        if p.total_time_coast:
+            c_CoastParticle = True
+            print "exportParticleData(): 'particleset' contains CoastParticle-data"
+        else:
+            c_CoastParticle = False
+    except:
+        c_CoastParticle = False
+
+
     data = []
 
     for p in particleset:
-        sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.time_simulated])
+        if c_stuckParticle and not c_CoastParticle:
+            sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.time_simulated])
+        elif not c_stuckParticle and c_CoastParticle:
+            sublist = np.array([p.id, p.lon, p.lat, p.time, p.total_time_coast, p.total_time_ocean, p.current_time_coast, p.current_time_ocean, p.number_on_coast, p.number_in_ocean, p.time_simulated])
+        elif c_stuckParticle and c_CoastParticle:
+            sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.total_time_coast, p.total_time_ocean, p.current_time_coast, p.current_time_ocean, p.number_on_coast, p.number_in_ocean, p.time_simulated])
+        else:
+            sublist = np.array([p.id, p.lon, p.lat, p.time])
 
         if velocities:
             gp = stgr.getGridPoints(fieldset, [p.time, p.lon, p.lat, p.depth])
@@ -50,6 +85,7 @@ def importParticleData(filename):
 
 def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False):
     """ Get data for particles that are stuck for a number of days after moving for a number of days.
+    For use with specific particle class: stuckParticle.
 
     Number of elements depends on 'level':
     0 - everything
