@@ -220,6 +220,9 @@ def rearrangeData(data, level=0):
             print "rearrangeData(): data contains 'StuckParticle'-data up to and including 'level' {}".format(level)
         if c_CoastParticle:
             print "rearrangeData(): data contains 'StuckParticle'-data up to and including 'level' {}".format(level)
+
+    ##### * StuckParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_stuck, total_time_moving, time_simulated
+    ##### * CoastParticle: id, lon, lat, time, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
     ##### * stuckCoastParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
 
 
