@@ -21,9 +21,9 @@ import math
 def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
     """ Export data per particle:
 
-    * StuckParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, time_simulated
+    * StuckParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_stuck, total_time_moving, time_simulated
     * CoastParticle: id, lon, lat, time, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
-    * stuckCoastParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
+    * stuckCoastParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_stuck, total_time_moving, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
 
     if velocities == true: also export
     grid_u, grid_v, grid_lons, grid_lats, grid_depth, grid_time
@@ -57,11 +57,11 @@ def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
 
     for p in particleset:
         if c_StuckParticle and not c_CoastParticle:
-            sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.time_simulated])
+            sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.total_time_stuck, p.total_time_moving, p.time_simulated])
         elif not c_StuckParticle and c_CoastParticle:
             sublist = np.array([p.id, p.lon, p.lat, p.time, p.total_time_coast, p.total_time_ocean, p.current_time_coast, p.current_time_ocean, p.number_on_coast, p.number_in_ocean, p.time_simulated])
         elif c_StuckParticle and c_CoastParticle:
-            sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.total_time_coast, p.total_time_ocean, p.current_time_coast, p.current_time_ocean, p.number_on_coast, p.number_in_ocean, p.time_simulated])
+            sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.total_time_stuck, p.total_time_moving, p.total_time_coast, p.total_time_ocean, p.current_time_coast, p.current_time_ocean, p.number_on_coast, p.number_in_ocean, p.time_simulated])
         else:
             sublist = np.array([p.id, p.lon, p.lat, p.time])
 
@@ -136,6 +136,91 @@ def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False
     if text:
         print "extractStuckParticles(): Total number of particles: {}. Using given arguments: {} are 'stuck' for at least {} days, {} are 'free'.".format(len(data), stuck_particles, time_stuck, free_particles)
     return list
+
+
+def rearrangeData(data, level=0):
+    """ Reduce the amount of data, depending on given 'level'.
+    Note: all a-lists will come before all b-lists
+    Note 2: a-lists are only possible if class of particles was StuckParticle
+            b-lists are only possible if class was CoastParticle
+
+    0 - 'everything'
+    1 - id, lon, lat <--> [3], [4], [5]
+
+    2a - total_time_stuck, total_time_moving <--> [6], [7]
+    2b - total_time_coast, total_time_ocean <--> [-1], [-2]
+
+    3a - current_time_stuck, current_time_moving <--> [8], [9]
+    3b - current_time_coast, current_time_ocean <--> [-3], [-4]
+
+    4b - number_on_coast, number_in_ocean <--> [-5], [-6]
+
+    5a - init_lon, init_lat, init_time <--> [10], [11], [12]
+
+    For level = 0:
+    return [level, bool:StuckParticle, bool:CoastParticle, id, lon, lat, total_time_stuck, total_time_moving, current_time_stuck, current_time_moving, init_lon, init_lat, init_time, number_in_ocean, number_on_coast, current_time_ocean, current_time_coast, total_time_ocean, total_time_coast] for each particle
+    """
+    if level <= 0 or level > 5:
+        level = 5
+
+    if len(data[0]) == 12:
+        c_StuckParticle = True
+        c_CoastParticle = False
+    elif len(data[0]) == 11:
+        c_StuckParticle = False
+        c_CoastParticle = True
+    elif len(data[0]) == 16:
+        c_StuckParticle = True
+        c_CoastParticle = True
+    else:
+        print "rearrangeData(): length of data is incorrect, expected 11, 12 or 16 instead of", len(data[0])
+
+    list = []
+
+    for p in data:
+        sublist = [level, c_StuckParticle, c_CoastParticle]
+
+        if level >= 1:
+            sublist.append(p[0:3])
+        else:
+            print "rearrangeData(): ERROR, level (={}) is not larger than 0. Returning".format(level)
+            return
+
+        if c_StuckParticle is True:
+            if level >= 2:
+                sublist.append(p[9])
+                sublist.append(p[10])
+            if level >= 3:
+                sublist.append(p[7])
+                sublist.append(p[8])
+            if level >= 4:
+                pass
+            if level >= 5:
+                sublist.append(p[4])
+                sublist.append(p[5])
+                sublist.append(p[6])
+
+        if c_CoastParticle is True:
+            if level >= 5:
+                pass
+            if level >= 4:
+                sublist.append(p[-3])
+                sublist.append(p[-2])
+            if level >= 3:
+                sublist.append(p[-4])
+                sublist.append(p[-5])
+            if level >= 2:
+                sublist.append(p[-6])
+                sublist.append(p[-7])
+
+        list.append(sublist)
+
+    if show:
+        if c_StuckParticle:
+            print "rearrangeData(): data contains 'StuckParticle'-data up to and including 'level' {}".format(level)
+        if c_CoastParticle:
+            print "rearrangeData(): data contains 'StuckParticle'-data up to and including 'level' {}".format(level)
+    ##### * stuckCoastParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
 
 
 def printLocations(subdata, initial=False):
