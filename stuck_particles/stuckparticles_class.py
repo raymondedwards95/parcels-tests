@@ -32,6 +32,9 @@ class StuckParticle(JITParticle):
     * time_moving - time since last small movement/velocity
     * time_simulated - total time since start (should be equal to time of particle)
 
+    * total_time_stuck - total time with small movemoent/velocity
+    * total_time_moving - total time with large movemoent/velocity
+
     * last_distance - last traveled distance
     * last_velocity - last velocity
 
@@ -46,6 +49,9 @@ class StuckParticle(JITParticle):
     time_stuck = Variable('time_stuck', initial=0., dtype=np.float32)
     time_moving = Variable('time_moving', initial=0., dtype=np.float32)
     time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)
+
+    total_time_stuck = Variable('total_time_stuck', initial=0., dtype=np.float32)
+    total_time_moving = Variable('total_time_moving', initial=0., dtype=np.float32)
 
     last_distance = Variable('last_distance', dtype=np.float32, to_write=False, initial=0.)
     last_velocity = Variable('last_velocity', dtype=np.float32, to_write=False, initial=0.)
@@ -90,8 +96,10 @@ def checkVelocity(particle, fieldset, time, dt):
     if particle.last_velocity < vel_threshold:
         # i.e. particle velocity is lower than threshold
         particle.time_stuck += delta_time
+        particle.total_time_stuck += delta_time
     else:
         particle.time_moving += delta_time
+        particle.total_time_moving += delta_time
         if particle.time_stuck > 0:
             particle.time_stuck = 0.
             particle.time_moving = 0.
