@@ -21,7 +21,7 @@ import math
 def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
     """ Export data per particle:
 
-    * stuckParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, time_simulated
+    * StuckParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, time_simulated
     * CoastParticle: id, lon, lat, time, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
     * stuckCoastParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
 
@@ -36,12 +36,12 @@ def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
     p = particleset[0]
     try:
         if p.time_stuck:
-            c_stuckParticle = True
-            print "exportParticleData(): 'particleset' contains stuckParticle-data"
+            c_StuckParticle = True
+            print "exportParticleData(): 'particleset' contains StuckParticle-data"
         else:
-            c_stuckParticle = False
+            c_StuckParticle = False
     except:
-        c_stuckParticle = False
+        c_StuckParticle = False
 
     try:
         if p.total_time_coast:
@@ -56,11 +56,11 @@ def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
     data = []
 
     for p in particleset:
-        if c_stuckParticle and not c_CoastParticle:
+        if c_StuckParticle and not c_CoastParticle:
             sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.time_simulated])
-        elif not c_stuckParticle and c_CoastParticle:
+        elif not c_StuckParticle and c_CoastParticle:
             sublist = np.array([p.id, p.lon, p.lat, p.time, p.total_time_coast, p.total_time_ocean, p.current_time_coast, p.current_time_ocean, p.number_on_coast, p.number_in_ocean, p.time_simulated])
-        elif c_stuckParticle and c_CoastParticle:
+        elif c_StuckParticle and c_CoastParticle:
             sublist = np.array([p.id, p.lon, p.lat, p.time, p.init_lon, p.init_lat, p.init_time, p.time_stuck, p.time_moving, p.total_time_coast, p.total_time_ocean, p.current_time_coast, p.current_time_ocean, p.number_on_coast, p.number_in_ocean, p.time_simulated])
         else:
             sublist = np.array([p.id, p.lon, p.lat, p.time])
@@ -73,19 +73,19 @@ def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
         data.append(sublist)
 
     if savefile:
-        np.savez_compressed(savefile, data)
+        np.savez_compressed(savefile, particledata=data)
         print "Data saved in", savefile
     return data
 
 
 def importParticleData(filename):
     """ Read data exported using exportParticleData() """
-    return np.load(filename)["arr_0"]
+    return np.load(filename)["particledata"]
 
 
 def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False):
     """ Get data for particles that are stuck for a number of days after moving for a number of days.
-    For use with specific particle class: stuckParticle.
+    For use with specific particle class: StuckParticle.
 
     Number of elements depends on 'level':
     0 - everything

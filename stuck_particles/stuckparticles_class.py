@@ -1,6 +1,6 @@
 """ Classes and kernels for observing particles
 
-class: stuckParticle
+class: StuckParticle
     parcels.JITParticle as JITParticle
     parcels.ScipyParticle as ScipyParticle
     parcels.Variable as Variable
@@ -10,9 +10,11 @@ kernelfunction: checkVelocity(particle, fieldset, time, dt)
     math.
 class: CoastParticle
 kernelfunction: particleOnCoast(particle, fieldset, time, dt)
-class: stuckCoastParticle
-    stuckParticle
+class: StuckCoastParticle
+    StuckParticle
     CoastParticle
+class: stuckParticle
+    StuckParticle
 """
 from parcels import JITParticle, ScipyParticle, Variable
 
@@ -22,7 +24,7 @@ import math
 from operator import attrgetter
 
 
-class stuckParticle(JITParticle):
+class StuckParticle(JITParticle):
     """ add more information to particles to check if a particle is stuck
 
     new variables:
@@ -61,7 +63,7 @@ class stuckParticle(JITParticle):
 
 def checkVelocity(particle, fieldset, time, dt):
     """ Function to calculate distance and velocity and to use them to check if a particle is stuck
-    For use as kernel.
+    For use as kernel for the class StuckParticle.
 
     sleep_time in s
     vel_threshold in m/s
@@ -132,7 +134,7 @@ class CoastParticle(JITParticle):
 
 
 def particleOnCoast(particle, fieldset, time, dt):
-    """ Function to use as kernel for CoastParticle()
+    """ Function to use as kernel for the class CoastParticle
     and coastfield F_N, F_S, F_E, F_W """
 
     # check if particle on coast:
@@ -169,9 +171,15 @@ def particleOnCoast(particle, fieldset, time, dt):
     particle.time_simulated += dt
 
 
-class StuckCoastParticle(stuckParticle, CoastParticle):
-    """ Combine both stuckParticle and CoastParticle classes """
+class StuckCoastParticle(StuckParticle, CoastParticle):
+    """ Combine both StuckParticle and CoastParticle classes """
 
     time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)
 
     # particle_class = Variable('particle_class', initial="StuckCoastParticle", dtype=np.str, to_write=False)
+
+
+class stuckParticle(StuckParticle):
+    """ For compatibility """
+
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)

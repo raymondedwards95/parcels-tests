@@ -77,10 +77,11 @@ def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}, skip_ant
                 elif check[1]:
                     f_e[t, j, i] = True
 
-    f_n = np.mean(f_n, axis=0)
-    f_s = np.mean(f_s, axis=0)
-    f_e = np.mean(f_e, axis=0)
-    f_w = np.mean(f_w, axis=0)
+    # needs fix:
+    f_n = np.sum(f_n, axis=0).astype(np.bool).astype(np.float32)
+    f_s = np.sum(f_s, axis=0).astype(np.bool).astype(np.float32)
+    f_e = np.sum(f_e, axis=0).astype(np.bool).astype(np.float32)
+    f_w = np.sum(f_w, axis=0).astype(np.bool).astype(np.float32)
 
     if skip_antarctic:
         for i in range(f_n.shape[-1]):
