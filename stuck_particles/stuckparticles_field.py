@@ -11,7 +11,7 @@ function: createCoastVelocities(fieldset, factor=True, abs=True, constant=0)
 function: addGlobCurrentCoast(fieldset, coastfields)
 function: exportCoastVelocities(field_coast_U, field_coast_V, filename)
 function: importCoastVelocities(filename)
-function: removeLandParticles(fieldset=None, particleset, show=False, filename=None, indices={})
+function: removeLandParticles(fieldset=None, particleset, show=False, filename=None, indices={}, method='interpolated')
     stf.getFieldsetGlobCurrent
     stp.particleCoords
     stgr.getGridPoints
@@ -267,15 +267,18 @@ def exportCoastVelocities(coastfields, filename):
     np.savez_compressed(filename, coast_U=field_coast_U, coast_V=field_coast_V, lons=lons, lats=lats)
     print "exportCoastVelocities(): Fields saved as " + filename
 
+
 def importCoastVelocities(filename):
     data = np.load(filename)
     return [data["coast_U"], data["coast_V"], data["lons"], data["lats"]]
 
 
-def removeLandParticles(fieldset=None, particleset=None, show=False, filename=None, indices={}):
+def removeLandParticles(fieldset=None, particleset=None, show=False, filename=None, indices={}, method='interpolated'):
     """ Remove particles that are on land.
     Particles on land are particles with velocities 0 at
     grid points around.
+    For parameter 'method', use 'grid' or 'interpolated';
+    'interpolated' is much faster than 'grid'.
     """
     if particleset is None:
         print "removeLandParticles(): no particles found, returning"
@@ -286,19 +289,39 @@ def removeLandParticles(fieldset=None, particleset=None, show=False, filename=No
     elif filename is not None:
         fieldset = getFieldsetGlobCurrent(filename, indices=indices, full_load=True)
 
+    if fieldset is None:
+        print "removeLandParticles(): cannot read fieldset, try parameter 'filename' or use 'full_load' when loading the fieldset."
+        return
+
     print "removeLandParticles(): there are {} particles in the ParticleSet".format(len(particleset))
     list_coords = stp.particleCoords(particleset)
     n = 0
-    for i in range(np.shape(list_coords)[0]-1, 0, -1):
-        gridpoints = stgr.getGridPoints(fieldset, list_coords[i])
-        gridvelocity = stgr.getGridVelocity(fieldset, gridpoints)
 
-        # check if all u and v are 0
-        if not np.any(gridvelocity[0]) and not np.any(gridvelocity[1]):
-            if show:
-                print "removeLandParticles(): deleted particle", particleset[i].id
-            particleset.remove(i)
-            n = n + 1
+    if method == 'grid':
+        for i in range(np.shape(list_coords)[0]-1, 0, -1):
+            gridpoints = stgr.getGridPoints(fieldset, list_coords[i])
+            gridvelocity = stgr.getGridVelocity(fieldset, gridpoints)
+
+            # check if all u and v are 0
+            if not np.any(gridvelocity[0]) and not np.any(gridvelocity[1]):
+                if show:
+                    print "removeLandParticles(): deleted particle", particleset[i].id
+                particleset.remove(i)
+                n = n + 1
+
+    elif method == 'interpolated':
+        for i in range(np.shape(list_coords)[0]-1, 0, -1):
+            [time, lon, lat, depth] = list_coords[i]
+            if fieldset.U[time, lon, lat, depth] == 0. and fieldset.V[time, lon, lat, depth] == 0.:
+                 if show:
+                     print "removeLandParticles(): deleted particle", particleset[i].id
+                 particleset.remove(i)
+                 n = n + 1
+
+    else:
+        print "removeLandParticles(): method '{}' is not possible, try 'grid' or 'interpolated'".format(method)
+
+
     print "removeLandParticles(): deleted {} particles that were on land".format(n)
     print "removeLandParticles(): there are now {} particles in the ParticleSet".format(len(particleset))
 
