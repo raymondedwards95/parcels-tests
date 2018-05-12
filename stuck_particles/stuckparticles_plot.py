@@ -10,9 +10,12 @@ plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefil
 plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None, title="")
 plotfunction: scatterStuckMoving(subdata, show=None, savefile=None, title="")
 plotfunction: plotCoast(coasts, show=None, savefile=None)
+plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=True, coasts=None)
 """
 import numpy as np
 import math
+
+from netCDF4 import Dataset
 
 try:
     import matplotlib.pyplot as plt
@@ -332,4 +335,36 @@ def plotCoasts(coasts, show=None, savefile=None):
         print "plotCoasts(): plot saved as '{}'".format(savefile)
     if show:
         print "plotCoasts(): showing plot"
+        plt.show()
+
+
+# def readPlotTrajectoriesFile(filename):
+#     file = Dataset(filename, "r")
+#     lon = np.ma.filled(file.variables["lon"], np.nan)
+#     lat = np.ma.filled(file.variables["lat"], np.nan)
+#     time = np.ma.filled(file.variables["time"], np.nan)
+#     z = np.ma.filled(file.variables["z"], np.nan)
+
+
+def plotTrajectories(filename, ocean_particles=True, coast_particles=True, coasts=None, savefile=None):
+    """ Plot trajectories of particles in a trajectories-file (*.nc) """
+    ### to do: filters
+    file = Dataset(filename, "r")
+
+    lon = np.ma.filled(file.variables["lon"], np.nan)
+    lat = np.ma.filled(file.variables["lat"], np.nan)
+    time = np.ma.filled(file.variables["time"], np.nan)
+    z = np.ma.filled(file.variables["z"], np.nan)
+
+    plt.figure()
+    plt.plot(np.transpose(lon), np.transpose(lat), "--")
+    plt.plot(np.transpose(lon)[-1], np.transpose(lat)[-1], "o")
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+
+    if savefile is not None:
+        plt.savefig(savefile)
+        print "plotTrajectories(): plot saved as '{}'".format(savefile)
+    if show:
+        print "plotTrajectories(): showing plot"
         plt.show()
