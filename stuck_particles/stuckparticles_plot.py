@@ -11,11 +11,15 @@ plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None, title=""
 plotfunction: scatterStuckMoving(subdata, show=None, savefile=None, title="")
 plotfunction: plotCoast(coasts, show=None, savefile=None)
 plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=True, coasts=None)
+    Field
+    FieldSet
 """
 import numpy as np
 import math
 
 from netCDF4 import Dataset
+
+from parcels import Field, Fieldset
 
 try:
     import matplotlib.pyplot as plt
@@ -361,6 +365,39 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, coast
     plt.plot(np.transpose(lon)[-1], np.transpose(lat)[-1], "o")
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
+
+    if coasts is not None:
+        if isinstance(coasts, Field):
+            # coasts is a Field from a FieldSet
+            plt.contourf(coasts.grid.lon, coasts.grid.lat, coasts.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
+
+        elif isinstance(coasts, (list, np.ndarray)):
+            if np.shape(np.array(coasts)) == (4, 3):
+                # coasts is directly from function stco.findCoasts() or stco.importCoasts
+                [north, south, east, west] = coasts
+
+                # should change to contourf ?
+                plt.contour(north[2].lon, north[2].lat, north[1].astype(np.bool), alpha=0.5, cmap="Greys")
+                plt.contour(south[2].lon, south[2].lat, south[1].astype(np.bool), alpha=0.5, cmap="Greys")
+                plt.contour(east[2].lon, east[2].lat, east[1].astype(np.bool), alpha=0.5, cmap="Greys")
+                plt.contour(west[2].lon, west[2].lat, west[1].astype(np.bool), alpha=0.5, cmap="Greys")
+
+            else:
+                # coasts is a list of Fields from a FieldSet
+                for field in coasts:
+                    plt.contourf(field.grid.lon, field.grid.lat, field.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
+
+            elif isinstance(coasts, FieldSet)
+                # coasts is a FieldSet
+                try:
+                    coasts.F_all
+                except NameError:
+                    print "plotTrajectories(): cannot find coastfields (F_all) in parameter 'coast'"
+
+                plt.contourf(coasts.F_all.grid.lon, coasts.F_all.grid.lat, coasts.F_all.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
+
+        else:
+            print "plotTrajectories(): 'coasts' is not a list of coasts or a field"
 
     if savefile is not None:
         plt.savefig(savefile)
