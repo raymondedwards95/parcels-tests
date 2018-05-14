@@ -27,7 +27,7 @@ except:
     print "ERROR: matplotlib not found"
 
 
-def plotVelocity(vector, field="U", coords=None, show=None, savefile=None, vmax=None):
+def plotVelocity(vector, field="vector", coords=None, show=None, savefile=None, vmax=None):
     """ plot results of stp.getVelocity() """
     if savefile is None:
         show = True
@@ -53,6 +53,10 @@ def plotVelocity(vector, field="U", coords=None, show=None, savefile=None, vmax=
         vel = U
     elif field == "V":
         vel = V
+    elif field == "vector":
+        pass
+    elif field == "absolute":
+        vel = np.sqrt(np.power(U, 2) + np.power(V, 2))
     else:
         print "plotVelocity(): parameter 'field' is incorrect. Expected 'U' or 'V'"
 
@@ -68,10 +72,16 @@ def plotVelocity(vector, field="U", coords=None, show=None, savefile=None, vmax=
         time = "start"
 
     plt.figure()
-    plt.contourf(lons, lats, vel, vmin=vmin, vmax=vmax)
+
+    if field == "U" or field == "V" or field == "absolute":
+        plt.contourf(lons, lats, vel, vmin=vmin, vmax=vmax)
+    elif field == "vector":
+        color = np.hypot(U, V)
+        plt.quiver(lon, lat, U, V, color)
+
     plt.plot(plon, plat, 'o', markersize=5, color="red")
     plt.plot(mesh_x.flatten(), mesh_y.flatten(), 'o', markersize=3, color="black")
-    plt.title("field {} at t={}".format(field, time))
+    # plt.title("field {} at t={}".format(field, time))
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.colorbar()
