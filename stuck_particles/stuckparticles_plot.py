@@ -360,9 +360,15 @@ def plotCoasts(coasts, show=None, savefile=None):
 #     z = np.ma.filled(file.variables["z"], np.nan)
 
 
-def plotTrajectories(filename, ocean_particles=True, coast_particles=True, coasts=None, savefile=None):
-    """ Plot trajectories of particles in a trajectories-file (*.nc) """
+def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field=None, coasts=None, show=None, savefile=None):
+    """ Plot trajectories of particles in a trajectories-file (*.nc)
     ### to do: filters
+    """
+    if savefile is None:
+        show = True
+    if show is None and savefile is not None:
+        show = False
+
     file = Dataset(filename, "r")
 
     lon = np.ma.filled(file.variables["lon"], np.nan)
@@ -408,6 +414,19 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, coast
 
         else:
             print "plotTrajectories(): 'coasts' is not a list of coasts or a field"
+
+    if field is not None:
+        if field.U.grid == field.V.grid:
+            lon_ = field.U.grid.lon
+            lat_ = field.U.grid.lat
+        else:
+            print "plotTrajectories(): grids of field.U and field.V are not the same, trying to continue"
+            lon_ = field.U.grid.lon
+            lat_ = field.U.grid.lat
+
+        ### index [0] is probably wrong !!!
+        color = np.hypot(field.U.data[0], field.V.data[0])
+        plt.quiver(lon_, lat_, field.U.data[0], field.V.data[0], color)
 
     if savefile is not None:
         plt.savefig(savefile)
