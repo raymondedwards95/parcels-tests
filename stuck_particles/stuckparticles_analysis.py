@@ -7,10 +7,10 @@ function: exportParticleData(fieldset, particleset, velocities=False, savefile=N
 function: importParticleData(filename)
 # function: extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False)
 function: printLocations(subdata, initial=False)
-function: printGridVelocity(subdata, flux=False, index=None)
-    stgr.calculateFlux
-    stgr.checkFlux
 function: filterParticles(subdata, time_stuck=0., time_moving=0.)
+# function: printGridVelocity(subdata, flux=False, index=None)
+#     stgr.calculateFlux
+#     stgr.checkFlux
 """
 import stuckparticles_grid as stgr
 
@@ -245,7 +245,7 @@ def printLocations(subdata, initial=False):
 
 
 def printGridVelocity(subdata, flux=False, index=None):
-    """ Show U and V on the grid points around the particles
+    """ OLD - Show U and V on the grid points around the particles
     if flux==True: calculate flux in the gridcell
     """
     if subdata[0][-1] < 4:
