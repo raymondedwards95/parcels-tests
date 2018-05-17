@@ -14,12 +14,14 @@ plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=T
     Field
     FieldSet
 """
-import numpy as np
-import math
+import stuckparticles_analysis as sta
 
 from netCDF4 import Dataset
 
-from parcels import Field, Fieldset
+from parcels import Field, FieldSet
+
+import numpy as np
+import math
 
 try:
     import matplotlib.pyplot as plt
@@ -403,14 +405,13 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
                 for field in coasts:
                     plt.contourf(field.grid.lon, field.grid.lat, field.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
 
-            elif isinstance(coasts, FieldSet)
-                # coasts is a FieldSet
-                try:
-                    coasts.F_all
-                except NameError:
-                    print "plotTrajectories(): cannot find coastfields (F_all) in parameter 'coast'"
-
+        elif isinstance(coasts, FieldSet):
+            # coasts is a FieldSet
+            try:
+                coasts.F_all
                 plt.contourf(coasts.F_all.grid.lon, coasts.F_all.grid.lat, coasts.F_all.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
+            except NameError:
+                print "plotTrajectories(): cannot find coastfields (F_all) in parameter 'coast'"
 
         else:
             print "plotTrajectories(): 'coasts' is not a list of coasts or a field"
