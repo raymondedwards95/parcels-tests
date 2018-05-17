@@ -5,7 +5,7 @@ function: exportParticleData(fieldset, particleset, velocities=False, savefile=N
     stgr.getGridPoints
     stgr.getGridVelocity
 function: importParticleData(filename)
-function: extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False)
+# function: extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False)
 function: printLocations(subdata, initial=False)
 function: printGridVelocity(subdata, flux=False, index=None)
     stgr.calculateFlux
@@ -84,7 +84,7 @@ def importParticleData(filename):
 
 
 def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False):
-    """ Get data for particles that are stuck for a number of days after moving for a number of days.
+    """ OLD - Get data for particles that are stuck for a number of days after moving for a number of days.
     For use with specific particle class: StuckParticle.
 
     Number of elements depends on 'level':
