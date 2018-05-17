@@ -24,7 +24,7 @@ import math
 from operator import attrgetter
 
 
-class StuckParticle(ScipyParticle):
+class StuckParticle(JITParticle):
     """ add more information to particles to check if a particle is stuck
 
     new variables:
@@ -111,7 +111,7 @@ def checkVelocity(particle, fieldset, time, dt):
     particle.time_simulated += dt
 
 
-class CoastParticle(ScipyParticle):
+class CoastParticle(JITParticle):
     """ Particle class to track if a particle gets on the coast
 
     new variables:
@@ -150,7 +150,9 @@ def particleOnCoast(particle, fieldset, time, dt):
     #         fieldset.F_S[time, particle.lon, particle.lat, particle.depth] or
     #         fieldset.F_E[time, particle.lon, particle.lat, particle.depth] or
     #         fieldset.F_W[time, particle.lon, particle.lat, particle.depth]):
-    if fieldset.F_all[time, particle.lon, particle.lat, particle.depth]:
+    # if fieldset.F_all[time, particle.lon, particle.lat, particle.depth] > 0.:
+    x = fieldset.F_all[time, particle.lon, particle.lat, particle.depth]
+    if x > 0.:
 
         # check initial location of the particle:
         if particle.number_on_coast == 0 and particle.number_in_ocean == 0:
@@ -184,7 +186,7 @@ def particleOnCoast(particle, fieldset, time, dt):
     particle.time_simulated += dt
 
 
-class StuckCoastParticle(ScipyParticle):
+class StuckCoastParticle(JITParticle):
     """ Combine both StuckParticle and CoastParticle classes """
     time_stuck = Variable('time_stuck', initial=0., dtype=np.float32, to_write=True)
     time_moving = Variable('time_moving', initial=0., dtype=np.float32, to_write=True)
