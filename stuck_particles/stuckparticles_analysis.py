@@ -6,6 +6,7 @@ function: exportParticleData(fieldset, particleset, velocities=False, savefile=N
     stgr.getGridVelocity
 function: importParticleData(filename)
 # function: extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False)
+function: def rearrangeData(data, level=0)
 function: printLocations(subdata, initial=False)
 function: filterParticles(subdata, time_stuck=0., time_moving=0.)
 # function: printGridVelocity(subdata, flux=False, index=None)
@@ -230,17 +231,17 @@ def rearrangeData(data, level=0):
 
 def printLocations(subdata, initial=False):
     """ Show initial and last location of particles in 'subdata' """
-    if initial and subdata[0][-1] < 3:
+    if initial and subdata[0][0] < 5:
         print "printLocations(): missing initial lon and lat."
         initial = False
 
     if initial:
         for p in subdata:
-            print "Particle {:.0f}: Initial location ({:05.3f}, {:05.3f}) --> Last location ({:05.3f}, {:05.3f}).".format(p[0], p[5], p[6], p[1], p[2])
+            print "Particle {:.0f}: Initial location ({:05.3f}, {:05.3f}) --> Last location ({:05.3f}, {:05.3f}).".format(p[3], p[10], p[11], p[4], p[5])
 
     else:
         for p in subdata:
-            print "Particle {:.0f}: Last location ({:05.3f}, {:05.3f}).".format(p[0], p[1], p[2])
+            print "Particle {:.0f}: Last location ({:05.3f}, {:05.3f}).".format(p[3], p[4], p[5])
     print ""
 
 
