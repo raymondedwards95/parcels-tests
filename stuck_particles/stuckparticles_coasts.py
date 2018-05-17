@@ -207,11 +207,14 @@ def returnFromCoast_A(particle, fieldset, time, dt):
     """ Kernel for pushing particles back from coast to ocean
     Assuming constant as 'velocity' in m/s
     Converting to lon/lat by using a simple conversion
+    https://en.wikipedia.org/wiki/Geographic_coordinate_system
     """
     lon, lat, depth = particle.lon, particle.lat, particle.depth
 
-    particle.lon += dt * fieldset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
-    particle.lat += dt * fieldset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    # particle.lon += dt * fieldset.f_constant / (111111 * math.cos(lat * math.pi / 180.)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    # particle.lat += dt * fieldset.f_constant / 111111 * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
+    particle.lon += dt * fieldset.f_constant / (111412.84 * math.cos(lat * math.pi / 180) - 93.5 * math.cos(3*lat * math.pi / 180) + 0.118 * math.cos(5*lat * math.pi / 180)) * (fieldset.F_E[time, lon, lat, depth] - fieldset.F_W[time, lon, lat, depth])
+    particle.lat += dt * fieldset.f_constant / (111132.92 - 559.82 * math.cos(2*lat * math.pi / 180) + 1.175 * math.cos(4*lat * math.pi / 180) - 0.0023 * math.cos(6*lat * math.pi / 180)) * (fieldset.F_N[time, lon, lat, depth] - fieldset.F_S[time, lon, lat, depth])
 
 
 def returnFromCoast_B(particle, fieldset, time, dt):
