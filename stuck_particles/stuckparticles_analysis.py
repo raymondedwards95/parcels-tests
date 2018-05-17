@@ -8,10 +8,10 @@ function: importParticleData(filename)
 # function: extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False)
 function: def rearrangeData(data, level=0)
 function: printLocations(subdata, initial=False)
-function: filterParticles(subdata, time_stuck=0., time_moving=0.)
 # function: printGridVelocity(subdata, flux=False, index=None)
 #     stgr.calculateFlux
 #     stgr.checkFlux
+function: filterStuckParticles(subdata, current_time_stuck=None, current_time_moving=None, total_time_stuck=None, total_time_moving=None)
 """
 import stuckparticles_grid as stgr
 
@@ -276,32 +276,57 @@ def printGridVelocity(subdata, flux=False, index=None):
     print ""
 
 
-def filterParticles(subdata, time_stuck=None, time_moving=None):
+def filterStuckParticles(subdata, current_time_stuck=None, current_time_moving=None, total_time_stuck=None, total_time_moving=None):
     """ Function to find particles with (more/different) specific parameters
-    using particles in 'subdata', created by extractStuckParticles().
-    'time_stuck' and 'time_moving' are in days.
+    using particles in 'subdata', created by rearrangeData().
+    Filters are in days.
+
+    Function returns two lists, one with 'wanted' particles and one with 'unwanted' particles
     """
-    if subdata[0][-1] < 2:
-        print "filterParticles(): can't filter using 'time_stuck' or 'time_moving', not enough information."
+    # CONSTANTS
+    DAYS = 24.*60.*60.
+
+    if subdata[0][0] < 2:
+        print "filterStuckParticles(): can't filter using 'time_stuck' or 'time_moving', not enough information."
         return
+    if subdata[0][0] < 3:
+        print "filterStuckParticles(): can't filter using 'current_time_stuck' or 'current_time_moving', not enough information. Continuing for 'total_time_stuck' and 'total_time_moving'."
+        current_time_moving = current_time_stuck = None
 
-    new_data = []
+    if subdata[0][1] is False:
+        print "filterStuckParticles(): can't filter using 'time_stuck' or 'time_moving', class of particle is not 'StuckParticle'"
 
-    if time_stuck is not None or time_moving is not None:
-        if time_stuck is None:
-            time_stuck = 0
-        elif time_moving is None:
-            time_moving = 0
+    list_a = []
+    list_b = []
 
+    if current_time_stuck is not None or current_time_moving is not None:
+        if current_time_stuck is None:
+            current_time_stuck = 0
+        elif current_time_moving is None:
+            current_time_moving = 0
+    if total_time_stuck is not None or total_time_moving is not None:
+        if total_time_stuck is None:
+            total_time_stuck = 0
+        elif total_time_moving is None:
+            total_time_moving = 0
+
+    if subdata[0][1] is True:
         for p in subdata:
-            if p[3] > time_stuck*24*60*60 and p[4] > time_moving*24*60*60:
-            # if p[3] >= time_stuck*24*60*60 and p[4] >= time_moving*24*60*60:
-                new_data.append(p)
-
+            if p[3] > current_time_stuck*DAYS and p[4] > current_time_moving*DAYS and p[6] > total_time_stuck*DAYS and p[7] > total_time_moving*DAYS:
+                list_a.append(p)
+            else:
+                list_b.append(p)
     else:
         for p in subdata:
-            new_data.append(p)
+            if p[6] > total_time_stuck*DAYS and p[7] > total_time_moving*DAYS:
+                list_a.append(p)
+            else:
+                list_b.append(p)
+
 
     print "filterParticles(): New number of particles: {}. These are all stuck for at least {} days".format(len(new_data), time_stuck)
 
-    return new_data
+    return (list_a, list_b)
+
+
+### [level, bool:StuckParticle, bool:CoastParticle, id, lon, lat, total_time_stuck, total_time_moving, current_time_stuck, current_time_moving, init_lon, init_lat, init_time, number_in_ocean, number_on_coast, current_time_ocean, current_time_coast, total_time_ocean, total_time_coast]
