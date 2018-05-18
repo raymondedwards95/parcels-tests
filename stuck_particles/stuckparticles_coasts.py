@@ -83,7 +83,8 @@ def findCoasts(filelocation=None, fieldset=None, times=[0], indices={}, skip_ant
     f_e = np.sum(f_e, axis=0).astype(np.bool).astype(np.float32)
     f_w = np.sum(f_w, axis=0).astype(np.bool).astype(np.float32)
 
-    if skip_antarctic:
+    if skip_antarctic is True and f_n.shape[-2:] == (640, 1440):
+        # print "findCoasts(): removing 'ghost'-coast at lower latitudes"
         for i in range(f_n.shape[-1]):
             f_n[39, i] = False
 
@@ -272,6 +273,8 @@ def main():
     exportCoasts(coasts, filename="coasts-globcurrent")
     coasts = importCoasts(filename="coasts-globcurrent.npz")
     print "coasts:", coasts
+    print
+    print "max values of fields 'coasts':", np.max(coasts[0][1]), np.max(coasts[1][1]), np.max(coasts[2][1]), np.max(coasts[3][1])
 
     # add coasts to fieldset
     addCoasts(fset, coasts)
