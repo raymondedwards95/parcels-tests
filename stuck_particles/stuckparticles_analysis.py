@@ -243,20 +243,30 @@ def rearrangeData(data, level=0, show=False):
     ##### * stuckCoastParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_coast, total_time_ocean, current_time_coast, current_time_ocean, number_on_coast, number_in_ocean, time_simulated
 
 
-def printLocations(subdata, initial=False):
-    """ Show initial and last location of particles in 'subdata' """
+def printLocations(subdata, initial=False, show=True):
+    """ Show and return initial and last location of particles in 'subdata' """
     if initial and subdata[0][0] < 5:
         print "printLocations(): missing initial lon and lat."
         initial = False
 
+    locs = []
+
     if initial:
         for p in subdata:
-            print "Particle {:.0f}: Initial location ({:05.3f}, {:05.3f}) --> Last location ({:05.3f}, {:05.3f}).".format(p[3], p[10], p[11], p[4], p[5])
+            if show:
+                print "Particle {:.0f}: Initial location ({:05.3f}, {:05.3f}) --> Last location ({:05.3f}, {:05.3f}).".format(p[3], p[10], p[11], p[4], p[5])
+            locs.append([p[3], p[4], p[5], p[10], p[11]])
 
     else:
         for p in subdata:
-            print "Particle {:.0f}: Last location ({:05.3f}, {:05.3f}).".format(p[3], p[4], p[5])
-    print ""
+            if show:
+                print "Particle {:.0f}: Last location ({:05.3f}, {:05.3f}).".format(p[3], p[4], p[5])
+            locs.append([p[3], p[4], p[5]])
+
+    if show:
+        print
+
+    return locs
 
 
 def printGridVelocity(subdata, flux=False, index=None):
