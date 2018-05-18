@@ -145,7 +145,7 @@ def extractStuckParticles(data, time_stuck=5, time_moving=5, level=0, text=False
     return list
 
 
-def rearrangeData(data, level=0):
+def rearrangeData(data, level=0, show=False):
     """ Reduce the amount of data, depending on given 'level'.
     Note: all a-lists will come before all b-lists
     Note 2: a-lists are only possible if class of particles was StuckParticle
@@ -169,6 +169,8 @@ def rearrangeData(data, level=0):
     """
     if level <= 0 or level > 5:
         level = 5
+        if show:
+            print "rearrangeData(): Setting level to highest possible:", level
 
     if len(data[0]) == 12:
         c_StuckParticle = True
@@ -176,11 +178,15 @@ def rearrangeData(data, level=0):
     elif len(data[0]) == 11:
         c_StuckParticle = False
         c_CoastParticle = True
-    elif len(data[0]) == 16:
+    elif len(data[0]) == 18:
         c_StuckParticle = True
         c_CoastParticle = True
+    elif len(data[0]) == 4:
+        c_StuckParticle = False
+        c_CoastParticle = False
     else:
-        print "rearrangeData(): length of data is incorrect, expected 11, 12 or 16 instead of", len(data[0])
+        print "rearrangeData(): length of data is incorrect, expected 4, 11, 12 or 18 instead of", len(data[0])
+        return
 
     list = []
 
@@ -188,7 +194,9 @@ def rearrangeData(data, level=0):
         sublist = [level, c_StuckParticle, c_CoastParticle]
 
         if level >= 1:
-            sublist.append(p[0:3])
+            sublist.append(p[0])
+            sublist.append(p[1])
+            sublist.append(p[2])
         else:
             print "rearrangeData(): ERROR, level (={}) is not larger than 0. Returning".format(level)
             return
