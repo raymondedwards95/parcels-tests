@@ -12,6 +12,7 @@ function: printLocations(subdata, initial=False)
 #     stgr.calculateFlux
 #     stgr.checkFlux
 function: filterStuckParticles(subdata, current_time_stuck=None, current_time_moving=None, total_time_stuck=None, total_time_moving=None)
+function: filterCoastParticles(subdata, current_time_coast=None, current_time_ocean=None, total_time_coast=None, total_time_ocean=None)
 """
 import stuckparticles_grid as stgr
 
@@ -365,36 +366,57 @@ def filterStuckParticles(subdata, current_time_stuck=None, current_time_moving=N
     return (list_a, list_b)
 
 
+def filterCoastParticles(subdata, current_time_coast=None, current_time_ocean=None, total_time_coast=None, total_time_ocean=None):
+    """ Function to find particles with (more/different) specific parameters
+    using particles in 'subdata', created by rearrangeData().
+    Filters are in days.
+
+    Function returns two lists, one with 'wanted' particles and one with 'unwanted' particles
+    """
+    DAYS = 24.*60.*60.
 
     list_a = []
     list_b = []
 
-    if current_time_stuck is not None or current_time_moving is not None:
-        if current_time_stuck is None:
-            current_time_stuck = 0
-        elif current_time_moving is None:
-            current_time_moving = 0
-    if total_time_stuck is not None or total_time_moving is not None:
-        if total_time_stuck is None:
-            total_time_stuck = 0
-        elif total_time_moving is None:
-            total_time_moving = 0
-
-    if subdata[0][1] is True:
+    if subdata[0][0] < 2:
+        print "filterCoastParticles(): can't filter using 'total_time_coast', 'total_time_ocean', 'current_time_coast' or 'current_time_ocean', not enough information in 'subdata'. Returning an empty and a full list/"
         for p in subdata:
-            if p[3] > current_time_stuck*DAYS and p[4] > current_time_moving*DAYS and p[6] > total_time_stuck*DAYS and p[7] > total_time_moving*DAYS:
+            list_b.append(p)
+        return (list_a, list_b)
+    if subdata[0][0] < 3:
+        print "filterCoastParticles(): can't filter using 'current_time_coast' or 'current_time_ocean', not enough information. Continuing for 'total_time_coast' and 'total_time_ocean'."
+        current_time_moving = current_time_stuck = None
+
+    if subdata[0][2] is False:
+        print "filterCoastParticles(): can't filter using 'total_time_coast', 'total_time_ocean', 'current_time_coast' or 'current_time_ocean', class of particle is not 'CoastParticle'. Returning a empty and a full list"
+        for p in subdata:
+            list_b.append(p)
+        return (list_a, list_b)
+
+    if current_time_coast is None:
+        current_time_coast = 0.
+    if current_time_ocean is None:
+        current_time_ocean = 0.
+    if total_time_coast is None:
+        total_time_coast = 0.
+    if total_time_ocean is None:
+        total_time_ocean = 0.
+
+    if subdata[0][0] >= 3:
+        for p in subdata:
+            if p[3] > current_time_coast*DAYS and p[4] > current_time_ocean*DAYS and p[6] > total_time_coast*DAYS and p[7] > total_time_ocean*DAYS:
                 list_a.append(p)
             else:
                 list_b.append(p)
     else:
         for p in subdata:
-            if p[6] > total_time_stuck*DAYS and p[7] > total_time_moving*DAYS:
+            if p[6] > total_time_coast*DAYS and p[7] > total_time_ocean*DAYS:
                 list_a.append(p)
             else:
                 list_b.append(p)
 
 
-    print "filterParticles(): New number of particles: {}. These are all stuck for at least {} days".format(len(new_data), time_stuck)
+    print "filterCoastParticles(): New number of particles: {} and {}. ".format(len(list_a), len(list_b))
 
     return (list_a, list_b)
 
