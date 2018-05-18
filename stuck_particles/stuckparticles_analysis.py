@@ -307,18 +307,64 @@ def filterStuckParticles(subdata, current_time_stuck=None, current_time_moving=N
 
     Function returns two lists, one with 'wanted' particles and one with 'unwanted' particles
     """
-    # CONSTANTS
     DAYS = 24.*60.*60.
 
+    list_a = []
+    list_b = []
+
     if subdata[0][0] < 2:
-        print "filterStuckParticles(): can't filter using 'time_stuck' or 'time_moving', not enough information."
-        return
+        print "filterStuckParticles(): can't filter using 'total_time_stuck', 'total_time_moving', 'current_time_stuck' or 'current_time_moving', not enough information in 'subdata'. Returning an empty and a full list/"
+        for p in subdata:
+            list_b.append(p)
+        return (list_a, list_b)
     if subdata[0][0] < 3:
         print "filterStuckParticles(): can't filter using 'current_time_stuck' or 'current_time_moving', not enough information. Continuing for 'total_time_stuck' and 'total_time_moving'."
         current_time_moving = current_time_stuck = None
 
     if subdata[0][1] is False:
-        print "filterStuckParticles(): can't filter using 'time_stuck' or 'time_moving', class of particle is not 'StuckParticle'"
+        print "filterStuckParticles(): can't filter using 'total_time_stuck', 'total_time_moving', 'current_time_stuck' or 'current_time_moving', class of particle is not 'StuckParticle'. Returning a empty and a full list"
+        for p in subdata:
+            list_b.append(p)
+        return (list_a, list_b)
+
+    # if current_time_stuck is not None or current_time_moving is not None:
+    #     if current_time_stuck is None:
+    #         current_time_stuck = 0
+    #     elif current_time_moving is None:
+    #         current_time_moving = 0
+    # if total_time_stuck is not None or total_time_moving is not None:
+    #     if total_time_stuck is None:
+    #         total_time_stuck = 0
+    #     elif total_time_moving is None:
+    #         total_time_moving = 0
+    if current_time_stuck is None:
+        current_time_stuck = 0.
+    if current_time_moving is None:
+        current_time_moving = 0.
+    if total_time_stuck is None:
+        total_time_stuck = 0.
+    if total_time_moving is None:
+        total_time_moving = 0.
+
+    if subdata[0][0] >= 3:
+        for p in subdata:
+            if p[3] > current_time_stuck*DAYS and p[4] > current_time_moving*DAYS and p[6] > total_time_stuck*DAYS and p[7] > total_time_moving*DAYS:
+                list_a.append(p)
+            else:
+                list_b.append(p)
+    else:
+        for p in subdata:
+            if p[6] > total_time_stuck*DAYS and p[7] > total_time_moving*DAYS:
+                list_a.append(p)
+            else:
+                list_b.append(p)
+
+
+    print "filterStuckParticles(): New number of particles: {} and {}. ".format(len(list_a), len(list_b))
+
+    return (list_a, list_b)
+
+
 
     list_a = []
     list_b = []
