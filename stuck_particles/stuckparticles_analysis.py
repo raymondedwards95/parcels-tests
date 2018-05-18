@@ -19,7 +19,7 @@ import numpy as np
 import math
 
 
-def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
+def exportParticleData(fieldset, particleset, velocities=False, savefile=None, StuckParticle=True, CoastParticle=True):
     """ Export data per particle:
 
     * StuckParticle: id, lon, lat, time, init_lon, init_lat, init_time, time_stuck, time_moving, total_time_stuck, total_time_moving, time_simulated
@@ -35,23 +35,29 @@ def exportParticleData(fieldset, particleset, velocities=False, savefile=None):
 
     # determine class of particles
     p = particleset[0]
-    try:
-        if p.time_stuck:
-            c_StuckParticle = True
-            print "exportParticleData(): 'particleset' contains StuckParticle-data"
-        else:
+    if StuckParticle:
+        try:
+            if p.time_stuck >= 0.:
+                c_StuckParticle = True
+                print "exportParticleData(): 'particleset' contains StuckParticle-data"
+            else:
+                c_StuckParticle = False
+                print "exportParticleData(): 'particleset' does not contain StuckParticle-data"
+        except:
             c_StuckParticle = False
-    except:
-        c_StuckParticle = False
+            print "exportParticleData(): 'particleset' does not contain StuckParticle-data!"
 
-    try:
-        if p.total_time_coast:
-            c_CoastParticle = True
-            print "exportParticleData(): 'particleset' contains CoastParticle-data"
-        else:
+    if CoastParticle:
+        try:
+            if p.total_time_coast >= 0.:
+                c_CoastParticle = True
+                print "exportParticleData(): 'particleset' contains CoastParticle-data"
+            else:
+                c_CoastParticle = False
+                print "exportParticleData(): 'particleset' does not contain CoastParticle-data"
+        except:
             c_CoastParticle = False
-    except:
-        c_CoastParticle = False
+            print "exportParticleData(): 'particleset' does not contain CoastParticle-data!"
 
 
     data = []
