@@ -6,11 +6,11 @@ plotfunction: plotVelocity(vector, field="U", coords=None, show=None, savefile=N
     plt.
 plotfunction: plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=None)
 plotfunction: showCoast(fields, type=np.bool, show=None, savefile=None, field="all")
-plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, coasttype=np.bool)
-plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None, title="")
-plotfunction: scatterStuckMoving(subdata, show=None, savefile=None, title="")
+plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool, filter_stuck=False, filter_coast=False)
+plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="coast")
+plotfunction: scatterParticleData(subdata, show=None, savefile=None, title="", filter="coast")
 plotfunction: plotCoast(coasts, show=None, savefile=None)
-plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=True, coasts=None)
+plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=True, field=None, coasts=None, show=None, savefile=None)
     Field
     FieldSet
 """
