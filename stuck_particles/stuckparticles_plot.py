@@ -283,34 +283,56 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         plt.show()
 
 
-def plotHistogram(subdata, width=1, show=None, savefile=None, title=""):
-    """ Show number of stuck particles in a histogram using data created in
+def plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="coast"):
+    """ Show number of stuck/coast particles in a histogram using data created in
     stuckparticles_analysis.
+    Parameter filter can be "coast" or "stuck".
     """
     if savefile is None:
         show = True
     if show is None and savefile is not None:
         show = False
 
-    if subdata[0][-1] < 2:
-        print "plotHistogram(): missing time information."
+    if subdata[0][0] < 2:
+        print "plotHistogram(): missing 'total_time' information. Exiting"
         return
 
-    time_stuck = np.array([])
-    time_moving = np.array([])
-    for p in subdata:
-        time_stuck = np.append(time_stuck, p[3]/(24*60*60))
-        time_moving = np.append(time_moving, p[4]/(24*60*60))
+    if filter == "stuck" and subdata[0][1] is False:
+        print "plotHistogram(): particle class is not 'StuckParticle'. Exiting"
+        return
 
-    time_stuck_red = np.trim_zeros(sorted(time_stuck, reverse=True))
+    if filter == "coast" and subdata[0][2] is False:
+        print "plotHistogram(): particle class is not 'CoastParticle'. Exiting"
+        return
+
+
+    list_a = np.array([])
+    list_b = np.array([])
+
+    if filter == "stuck":
+        for p in subdata:
+            list_a = np.append(list_a, p[6]/(24*60*60))
+            list_b = np.append(list_b, p[7]/(24*60*60))
+    elif filter == "coast":
+        for p in subdata:
+            list_a = np.append(list_a, p[-1]/(24*60*60))
+            list_b = np.append(list_b, p[-2]/(24*60*60))
+    else:
+        print "plotHistogram(): can not use given 'filter'. Exiting"
+
+
+    list_a_reduced = np.trim_zeros(sorted(list_a, reverse=True))
 
     # n_bins = int(round((np.max(time_stuck+time_moving) - np.min(time_stuck+time_moving)) / width))
-    n_bins = np.arange(0, np.max(time_stuck+time_moving)+width, width)
+    n_bins = np.arange(0, np.max(list_a+list_b)+width, width)
 
     plt.figure()
-    plt.hist(time_stuck_red, n_bins, facecolor="green", alpha=0.75, edgecolor='black', linewidth=0.1)
+    plt.hist(list_a_reduced, n_bins, facecolor="green", alpha=0.75, edgecolor='black', linewidth=0.1)
     plt.xticks(n_bins)
-    plt.xlabel("days stuck")
+    if filter == "stuck":
+        plt.xlabel("days stuck")
+    if filter == "coast":
+        plt.xlabel("days on coast")
     plt.ylabel("number of particles")
     plt.title(title+"\n{} particles in histogram".format(len(time_stuck)))
     plt.grid()
