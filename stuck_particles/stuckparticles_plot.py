@@ -179,7 +179,7 @@ def showCoast(coastfields, coasttype=np.bool, show=None, savefile=None, field="a
         plt.show()
 
 
-def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool):
+def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool, filter_stuck=False, filter_coast=False):
     """ Plot locations of particles in subdata or data from stuckparticles_analysis.
     Assuming that the first three values are (id, lon, lat).
     """
@@ -188,8 +188,8 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
     if show is None and savefile is not None:
         show = False
 
-    if initial and subdata[0][-1] < 3:
-        print "plotLocations(): not enough data."
+    if initial and subdata[0][0] < 5:
+        print "plotLocations(): not enough data. Continuing without initial positions"
         initial = False
 
     if coastfields is not None:
@@ -203,18 +203,65 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         field = field.astype(coasttype)
 
 
-    colors = ["red", "blue", "green", "pink", "orange", "purple"]
+    filter = None
+
+    if filter_stuck is True and subdata[0][0] >= 3 and subdata[0][1] is True:
+        filter = "filter_stuck"
+        print "plotLocations(): base color of particles on state of 'time_stuck'."
+
+    if filter_coast is True and subdata[0][0] >= 3 and subdata[0][2] is True:
+        # override filter_stuck
+        filter = "filter_coast"
+        print "plotLocations(): base color of particles on state of 'time_coast'."
+
+
+    colors = ["red", "blue", "green", "pink", "orange", "purple", "black"]
     number = len(colors)
 
     plt.figure()
     for i in range(len(subdata)):
-        m = i%number
+        if filter == "filter_stuck":
+            # now stuck: red
+            # stuck before: orange
+            # never stuck: green
+            # always stuck: black
+            if subdata[i][8] > 0. and subdata[i][7] > 0.:
+                m = 0
+            elif subdata[i][9] > 0. and subdata[i][6] > 0.:
+                m = 4
+            elif subdata[i][6] <= 0.:
+                m = 2
+            elif subdata[i][7] <= 0.:
+                m = 6
+            else:
+                print "plotLocations(): 'filter_stuck' is currently not working for particle", subdata[i][3]
+                m = 6
 
-        plt.plot(subdata[i][1], subdata[i][2], "o", markersize=4, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][0]), subdata[i][1], subdata[i][2]))
+        elif filter == "filter_coast":
+            # now on coast: red
+            # on coast before: orange
+            # never on coast: green
+            # always on coast: black
+            if subdata[i][-3] > 0. and subdata[i][-2] > 0.:
+                m = 0
+            elif subdata[i][-4] > 0. and subdata[i][-1] > 0.:
+                m = 4
+            elif subdata[i][-1] <= 0.:
+                m = 2
+            elif subdata[i][-2] <= 0.:
+                m = 6
+            else:
+                print "plotLocations(): 'filter_coast' is currently not working for particle", subdata[i][3]
+                m = 6
+        else:
+            m = i%number # for random colors
 
-        if initial and subdata[0][-1] > 2:
-            plt.plot(subdata[i][5], subdata[i][6], "o", markersize=1, color=colors[m])
-            plt.plot([subdata[i][1], subdata[i][5]], [subdata[i][2], subdata[i][6]], "--", color=colors[m])
+
+        plt.plot(subdata[i][4], subdata[i][5], "o", markersize=4, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][3]), subdata[i][4], subdata[i][5]))
+
+        if initial and subdata[0][1] >= 5:
+            plt.plot(subdata[i][10], subdata[i][11], "o", markersize=1, color=colors[m])
+            plt.plot([subdata[i][4], subdata[i][10]], [subdata[i][5], subdata[i][11]], "--", color=colors[m])
 
     if coastfields is not None:
         plt.contourf(lons, lats, field, alpha=0.5, cmap="Greys")
