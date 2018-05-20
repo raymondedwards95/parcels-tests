@@ -323,7 +323,7 @@ def filterStuckParticles(subdata, current_time_stuck=None, current_time_moving=N
         current_time_moving = current_time_stuck = None
 
     if subdata[0][1] is False:
-        print "filterStuckParticles(): can't filter using 'total_time_stuck', 'total_time_moving', 'current_time_stuck' or 'current_time_moving', class of particle is not 'StuckParticle'. Returning a empty and a full list"
+        print "filterStuckParticles(): can't filter using 'total_time_stuck', 'total_time_moving', 'current_time_stuck' or 'current_time_moving', class of particle is not 'StuckParticle'. Returning an empty and a full list"
         for p in subdata:
             list_b.append(p)
         return (list_a, list_b)
@@ -388,7 +388,7 @@ def filterCoastParticles(subdata, current_time_coast=None, current_time_ocean=No
         current_time_moving = current_time_stuck = None
 
     if subdata[0][2] is False:
-        print "filterCoastParticles(): can't filter using 'total_time_coast', 'total_time_ocean', 'current_time_coast' or 'current_time_ocean', class of particle is not 'CoastParticle'. Returning a empty and a full list"
+        print "filterCoastParticles(): can't filter using 'total_time_coast', 'total_time_ocean', 'current_time_coast' or 'current_time_ocean', class of particle is not 'CoastParticle'. Returning an empty and a full list"
         for p in subdata:
             list_b.append(p)
         return (list_a, list_b)
