@@ -345,9 +345,10 @@ def plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="
         plt.show()
 
 
-def scatterStuckMoving(subdata, show=None, savefile=None, title=""):
-    """ Create a scatter plot from time_moving and time_stuck in subdata
-    Plot shows if a particle was stuck more than once.
+def scatterParticleData(subdata, show=None, savefile=None, title="", filter="coast"):
+    """ Create a scatter plot from time_moving/time_ocean and time_stuck/time_coast in subdata
+    Plot shows if a particle was stuck/on_coast more than once.
+    Parameter filter can be "coast" or "stuck".
     """
     if savefile is None:
         show = True
@@ -358,22 +359,34 @@ def scatterStuckMoving(subdata, show=None, savefile=None, title=""):
         print "scatterStuckMoving(): missing time information."
         return
 
-    time_stuck = np.array([])
-    time_moving = np.array([])
-    for p in subdata:
-        time_stuck = np.append(time_stuck, p[3]/(24*60*60))
-        time_moving = np.append(time_moving, p[4]/(24*60*60))
+    list_a = np.array([])
+    list_b = np.array([])
 
-    x = np.linspace(0, np.max(time_moving+time_stuck), 2)
-    y = np.max(time_moving+time_stuck) - x
+    if filter == "stuck":
+        for p in subdata:
+            list_a = np.append(list_a, p[6]/(24*60*60))
+            list_b = np.append(list_b, p[7]/(24*60*60))
+    elif filter == "coast":
+        for p in subdata:
+            list_a = np.append(list_a, p[-1]/(24*60*60))
+            list_b = np.append(list_b, p[-2]/(24*60*60))
+    else:
+        print "scatterParticleData(): can not use given 'filter'. Exiting"
+
+    x = np.linspace(0, np.max(list_b+list_a), 2)
+    y = np.max(list_b+list_a) - x
 
     plt.figure()
-    plt.scatter(time_stuck, time_moving)
+    plt.scatter(list_a, list_b)
     plt.plot(x, y, "--", color="red")
-    plt.xlabel("days stuck")
-    plt.ylabel("days moved")
-    plt.xlim([-0.1, max(time_moving+time_stuck)*1.05])
-    plt.ylim([-0.1, max(time_moving+time_stuck)*1.05])
+    if filter == "stuck":
+        plt.xlabel("days stuck")
+        plt.ylabel("days moved")
+    if filter == "coast":
+        plt.xlabel("days on coast")
+        plt.ylabel("days in ocean")
+    plt.xlim([-0.1, max(list_b+list_a)*1.05])
+    plt.ylim([-0.1, max(list_b+list_a)*1.05])
     plt.title(title+"\n{} particles in plot".format(len(subdata)))
     plt.grid()
 
