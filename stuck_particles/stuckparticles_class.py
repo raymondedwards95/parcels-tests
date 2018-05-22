@@ -46,23 +46,23 @@ class StuckParticle(JITParticle):
     * prev_lat - previous latitude
     * prev_time - previous time
     """
-    time_stuck = Variable('time_stuck', initial=0., dtype=np.float32)
-    time_moving = Variable('time_moving', initial=0., dtype=np.float32)
-    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)
+    time_stuck = Variable('time_stuck', initial=0., dtype=np.float32, to_write=True)
+    time_moving = Variable('time_moving', initial=0., dtype=np.float32, to_write=True)
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=True)
 
-    total_time_stuck = Variable('total_time_stuck', initial=0., dtype=np.float32)
-    total_time_moving = Variable('total_time_moving', initial=0., dtype=np.float32)
+    total_time_stuck = Variable('total_time_stuck', initial=0., dtype=np.float32, to_write=True)
+    total_time_moving = Variable('total_time_moving', initial=0., dtype=np.float32, to_write=True)
 
-    last_distance = Variable('last_distance', dtype=np.float32, to_write=False, initial=0.)
-    last_velocity = Variable('last_velocity', dtype=np.float32, to_write=False, initial=0.)
+    last_distance = Variable('last_distance', initial=0., dtype=np.float32, to_write=False)
+    last_velocity = Variable('last_velocity', initial=0., dtype=np.float32, to_write=False)
 
-    init_lon = Variable('init_lon', dtype=np.float32, to_write=True, initial=attrgetter('lon'))
-    init_lat = Variable('init_lat', dtype=np.float32, to_write=True, initial=attrgetter('lat'))
-    init_time = Variable('init_time', dtype=np.float32, to_write=True, initial=attrgetter('time'))
+    init_lon = Variable('init_lon', initial=attrgetter('lon'), dtype=np.float32, to_write=False)
+    init_lat = Variable('init_lat', initial=attrgetter('lat'), dtype=np.float32, to_write=False)
+    init_time = Variable('init_time', initial=attrgetter('time'), dtype=np.float32, to_write=False)
 
-    prev_lon = Variable('prev_lon', dtype=np.float32, to_write=False, initial=attrgetter('lon'))
-    prev_lat = Variable('prev_lat', dtype=np.float32, to_write=False, initial=attrgetter('lat'))
-    prev_time = Variable('prev_time', dtype=np.float32, to_write=False, initial=attrgetter('time'))
+    prev_lon = Variable('prev_lon', initial=attrgetter('lon'), dtype=np.float32, to_write=False)
+    prev_lat = Variable('prev_lat', initial=attrgetter('lat'), dtype=np.float32, to_write=False)
+    prev_time = Variable('prev_time', initial=attrgetter('time'), dtype=np.float32, to_write=False)
 
     # particle_class = Variable('particle_class', initial="StuckParticle", dtype=np.str, to_write=False)
 
@@ -190,35 +190,35 @@ class StuckCoastParticle(JITParticle):
     """ Combine both StuckParticle and CoastParticle classes """
     time_stuck = Variable('time_stuck', initial=0., dtype=np.float32, to_write=True)
     time_moving = Variable('time_moving', initial=0., dtype=np.float32, to_write=True)
-    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=False)
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=True)
 
-    total_time_stuck = Variable('total_time_stuck', initial=0., dtype=np.float32, to_write=False)
-    total_time_moving = Variable('total_time_moving', initial=0., dtype=np.float32, to_write=False)
+    total_time_stuck = Variable('total_time_stuck', initial=0., dtype=np.float32, to_write=True)
+    total_time_moving = Variable('total_time_moving', initial=0., dtype=np.float32, to_write=True)
 
-    last_distance = Variable('last_distance', dtype=np.float32, to_write=False, initial=0.)
-    last_velocity = Variable('last_velocity', dtype=np.float32, to_write=True, initial=0.)
+    last_distance = Variable('last_distance', initial=0., dtype=np.float32, to_write=False)
+    last_velocity = Variable('last_velocity', initial=0., dtype=np.float32, to_write=False)
 
-    init_lon = Variable('init_lon', dtype=np.float32, to_write=False, initial=attrgetter('lon'))
-    init_lat = Variable('init_lat', dtype=np.float32, to_write=False, initial=attrgetter('lat'))
-    init_time = Variable('init_time', dtype=np.float32, to_write=False, initial=attrgetter('time'))
+    init_lon = Variable('init_lon', initial=attrgetter('lon'), dtype=np.float32, to_write=False)
+    init_lat = Variable('init_lat', initial=attrgetter('lat'), dtype=np.float32, to_write=False)
+    init_time = Variable('init_time', initial=attrgetter('time'), dtype=np.float32, to_write=False)
 
-    prev_lon = Variable('prev_lon', dtype=np.float32, to_write=False, initial=attrgetter('lon'))
-    prev_lat = Variable('prev_lat', dtype=np.float32, to_write=False, initial=attrgetter('lat'))
-    prev_time = Variable('prev_time', dtype=np.float32, to_write=False, initial=attrgetter('time'))
+    prev_lon = Variable('prev_lon', initial=attrgetter('lon'), dtype=np.float32, to_write=False)
+    prev_lat = Variable('prev_lat', initial=attrgetter('lat'), dtype=np.float32, to_write=False)
+    prev_time = Variable('prev_time', initial=attrgetter('time'), dtype=np.float32, to_write=False)
 
 
-    total_time_coast = Variable('total_time_coast', initial=0., dtype=np.float32, to_write=False)
+    total_time_coast = Variable('total_time_coast', initial=0., dtype=np.float32, to_write=True)
     current_time_coast = Variable('current_time_coast', initial=0., dtype=np.float32, to_write=True)
 
-    total_time_ocean = Variable('total_time_ocean', initial=0., dtype=np.float32, to_write=False)
+    total_time_ocean = Variable('total_time_ocean', initial=0., dtype=np.float32, to_write=True)
     current_time_ocean = Variable('current_time_ocean', initial=0., dtype=np.float32, to_write=True)
 
     number_on_coast = Variable('number_on_coast', initial=0, dtype=np.int32, to_write=True)
     number_in_ocean = Variable('number_in_ocean', initial=0, dtype=np.int32, to_write=True)
-    initial_location = Variable('initial_location', initial=0, dtype=np.int32, to_write=False)
+    initial_location = Variable('initial_location', initial=0, dtype=np.int32, to_write=True)
 
 
-    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=False)
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=True)
 
     # particle_class = Variable('particle_class', initial="StuckCoastParticle", dtype=np.str, to_write=False)
 
@@ -226,4 +226,4 @@ class StuckCoastParticle(JITParticle):
 class stuckParticle(StuckParticle):
     """ For compatibility """
 
-    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32)
+    time_simulated = Variable('time_simulated', initial=0., dtype=np.float32, to_write=True)
