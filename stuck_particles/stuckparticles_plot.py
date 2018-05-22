@@ -285,7 +285,7 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         plt.show()
 
 
-def plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="coast"):
+def plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="coast", remove_zeros=True):
     """ Show number of stuck/coast particles in a histogram using data created in
     stuckparticles_analysis.
     Parameter filter can be "coast" or "stuck".
@@ -322,8 +322,10 @@ def plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="
     else:
         print "plotHistogram(): can not use given 'filter'. Exiting"
 
-
-    list_a_reduced = np.trim_zeros(sorted(list_a, reverse=True))
+    if remove_zeros:
+        list_a_reduced = np.trim_zeros(sorted(list_a, reverse=True))
+    else:
+        list_a_reduced = list_a
 
     # n_bins = int(round((np.max(time_stuck+time_moving) - np.min(time_stuck+time_moving)) / width))
     n_bins = np.arange(0, np.max(list_a+list_b)+width, width)
