@@ -338,7 +338,7 @@ def plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="
     if filter == "coast":
         plt.xlabel("days on coast")
     plt.ylabel("number of particles")
-    plt.title(title+"\n{} particles in histogram".format(len(time_stuck)))
+    plt.title(title+"\n{} particles in histogram".format(len(list_a_reduced)))
     plt.grid()
 
     if savefile is not None:
@@ -359,8 +359,8 @@ def scatterParticleData(subdata, show=None, savefile=None, title="", filter="coa
     if show is None and savefile is not None:
         show = False
 
-    if subdata[0][-1] < 2:
-        print "scatterStuckMoving(): missing time information."
+    if subdata[0][0] < 2:
+        print "scatterParticleData(): missing time information."
         return
 
     list_a = np.array([])
@@ -397,9 +397,9 @@ def scatterParticleData(subdata, show=None, savefile=None, title="", filter="coa
 
     if savefile is not None:
         plt.savefig(savefile)
-        print "scatterStuckMoving(): plot saved as '{}'".format(savefile)
+        print "scatterParticleData(): plot saved as '{}'".format(savefile)
     if show:
-        print "scatterStuckMoving(): showing plot"
+        print "scatterParticleData(): showing plot"
         plt.show()
 
 
