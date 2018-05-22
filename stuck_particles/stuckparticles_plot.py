@@ -79,7 +79,7 @@ def plotVelocity(vector, field="vector", coords=None, show=None, savefile=None, 
         plt.contourf(lons, lats, vel, vmin=vmin, vmax=vmax)
     elif field == "vector":
         color = np.hypot(U, V)
-        plt.quiver(lon, lat, U, V, color)
+        plt.quiver(lons, lats, U, V, color)
 
     plt.plot(plon, plat, 'o', markersize=5, color="red")
     plt.plot(mesh_x.flatten(), mesh_y.flatten(), 'o', markersize=3, color="black")
@@ -87,6 +87,8 @@ def plotVelocity(vector, field="vector", coords=None, show=None, savefile=None, 
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.colorbar()
+    plt.xticks(lons)
+    plt.yticks(lats)
     plt.grid()
     if savefile is not None:
         plt.savefig(savefile)
