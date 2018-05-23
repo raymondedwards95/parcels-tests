@@ -13,7 +13,7 @@ plotfunction: plotCoast(coasts, show=None, savefile=None)
 plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=True, field=None, coasts=None, show=None, savefile=None)
     Field
     FieldSet
-plotfunction: plotParticleInformation()
+plotfunction: plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False, current=True, total=True, average=True, average_all=True, remove_zeros=False, sort=0, style="histogram", show=None, savefile=None)
     stg.sort_col
 """
 import stuckparticles_analysis as sta
@@ -213,11 +213,15 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
     if filter_stuck is True and subdata[0][0] >= 3 and subdata[0][1] is True:
         filter = "filter_stuck"
         print "plotLocations(): base color of particles on state of 'time_stuck'."
+    elif filter_stuck is True and (subdata[0][0] < 3 or subdata[0][1] is False):
+        print "plotLocations(): can't change color using stuck-times ('filter_stuck')"
 
     if filter_coast is True and subdata[0][0] >= 3 and subdata[0][2] is True:
         # override filter_stuck
         filter = "filter_coast"
         print "plotLocations(): base color of particles on state of 'time_coast'."
+    elif filter_coast is True and (subdata[0][0] < 3 or subdata[0][2] is False):
+        print "plotLocations(): can't change color using coast-times ('filter_coast')"
 
 
     colors = ["red", "blue", "green", "pink", "orange", "purple", "black"]
@@ -526,7 +530,7 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
         plt.show()
 
 
-def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False, current=True, total=True, average=True, average_all=True, remove_zeros=False, sort=0, style="histogram"):
+def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False, current=True, total=True, average=True, average_all=True, remove_zeros=False, sort=0, style="histogram", show=None, savefile=None):
     """ Show totals and/or currents of each particle
     coast: show coast-ocean values
     coast_number: show number_on_coast/number_in_ocean
