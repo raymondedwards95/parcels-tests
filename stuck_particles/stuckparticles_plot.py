@@ -13,8 +13,11 @@ plotfunction: plotCoast(coasts, show=None, savefile=None)
 plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=True, field=None, coasts=None, show=None, savefile=None)
     Field
     FieldSet
+plotfunction: plotParticleInformation()
+    stg.sort_col
 """
 import stuckparticles_analysis as sta
+import stuckparticles_general as stg
 
 from netCDF4 import Dataset
 
@@ -520,4 +523,167 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
         print "plotTrajectories(): plot saved as '{}'".format(savefile)
     if show:
         print "plotTrajectories(): showing plot"
+        plt.show()
+
+
+def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False, current=True, total=True, average=True, average_all=True, remove_zeros=False, sort=0, style="histogram"):
+    """ Show totals and/or currents of each particle
+    coast: show coast-ocean values
+    coast_number: show number_on_coast/number_in_ocean
+    stuck: show stuck/moving values
+    current: show current values, 'True' or 'False'
+    total: show total values, 'True' or 'False'
+    average: show average values, 'True' or 'False', only for 'coast'
+    average_all: show values averaged over all particles, only for 'coast'
+    # remove_zeros: 'True' or 'False'
+    sort lists:
+        0 - sort by id
+        1 - sort by total time stuck/coast
+        2 - sort by total time moving/ocean
+        3 - sort by current time stuck/coast
+        4 - sort by current time moving/ocean
+    style: plotting style, 'histogram', 'dots' or 'line'
+    """
+    # CONSTANTS
+    DAYS = 24.*60.*60.
+
+    if savefile is None:
+        show = True
+    if show is None and savefile is not None:
+        show = False
+
+    # check filter
+    if filter == "stuck" and subdata[0][1] is False:
+        print "plotParticleInformation(): particle class is not 'StuckParticle'. Exiting"
+        return
+
+    if filter == "coast" and subdata[0][2] is False:
+        print "plotParticleInformation(): particle class is not 'CoastParticle'. Exiting"
+        return
+
+    # check subdata levels
+    if subdata[0][0] < 4 and average is True:
+        print "plotParticleInformation(): missing 'number_in_ocean'/'number_on_coast' information. Skipping 'average'"
+        average = False
+
+    if subdata[0][0] < 4 and coast_number is True:
+        if current is False and total is False:
+            print "plotParticleInformation(): missing 'number_in_ocean'/'number_on_coast' information. Exiting"
+            return
+
+        print "plotParticleInformation(): missing 'number_in_ocean'/'number_on_coast' information. Trying to skip 'coast_number'"
+        coast_number = False
+
+    if subdata[0][0] < 3 and current is True:
+        if total is False:
+            print "plotParticleInformation(): missing 'current_time' information. Exiting"
+            return
+
+        print "plotParticleInformation(): missing 'current_time' information. Skipping 'current'"
+        current = False
+
+    if subdata[0][0] < 2 and total is True:
+        print "plotParticleInformation(): missing 'total_time' information. Exiting"
+        return
+
+    # finding data
+    number = 1
+    if coast:
+        if total:
+            ct = True
+            number += 2
+            if average:
+                cta = True
+                number += 2
+        if current:
+            cc = True
+            number += 2
+    if coast_number:
+        nc = True
+        number += 2
+    if stuck:
+        if total:
+            st = True
+            number += 2
+            if average:
+                sta = True
+                number += 2
+        if current:
+            sc = True
+            number += 2
+
+    if number == 1:
+        print "plotParticleInformation(): no data to show, exiting"
+        return
+
+
+    subdata_ = np.array(subdata, dtype=np.object)
+
+    if sort > 4:
+        print "plotParticleInformation(): 'sort' is too large, setting 'sort' to 0 ('id')"
+        sort = 0
+
+    if sort == 0:
+        subdata_ = stg.sort_col(subdata_, [0])
+    elif sort == 1:
+        if coast:
+            subdata_ = stg.sort_col(subdata_, [-1])
+        elif stuck:
+            subdata_ = stg.sort_col(subdata_, [6])
+    elif sort == 2:
+        if coast:
+            subdata_ = stg.sort_col(subdata_, [-2])
+        elif stuck:
+            subdata_ = stg.sort_col(subdata_, [7])
+    elif sort == 3:
+        if coast:
+            subdata_ = stg.sort_col(subdata_, [-3])
+        elif stuck:
+            subdata_ = stg.sort_col(subdata_, [8])
+    elif sort == 4:
+        if coast:
+            subdata_ = stg.sort_col(subdata_, [-4])
+        elif stuck:
+            subdata_ = stg.sort_col(subdata_, [9])
+
+
+    # plot
+    plt.figure()
+    if style == ('histogram' or 'line' or 'dots')
+        if style == 'line':
+            form = '-o'
+        elif style == 'dots':
+            form = 'o'
+        else:
+            form == 'o'
+
+        if ct:
+            plt.plot(subdata_[:,-1]/DAYS, form, label="total time on coast (in days)")
+            plt.plot(subdata_[:,-2]/DAYS, form, label="total time in ocean (in days)")
+        if cta:
+            plt.plot(subdata_[:,-1]/subdata_[:,-5]/DAYS, form, label="average time on coast (in days)")
+            plt.plot(subdata_[:,-2]/subdata_[:,-6]/DAYS, form, label="average time in ocean (in days)")
+        if cc:
+            plt.plot(subdata_[:,-3]/DAYS, form, label="current time on coast (in days)")
+            plt.plot(subdata_[:,-4]/DAYS, form, label="current time in ocean (in days)")
+        if nc:
+            plt.plot(subdata_[:,-5], form, label="total movements to coast")
+            plt.plot(subdata_[:,-6], form, label="total movements to ocean")
+        if st:
+            plt.plot(subdata_[:,6]/DAYS, form, label="total time stuck (in days)")
+            plt.plot(subdata_[:,7]/DAYS, form, label="total time moving (in days)")
+        if sc:
+            plt.plot(subdata_[:,8]/DAYS, form, label="current time stuck (in days)")
+            plt.plot(subdata_[:,9]/DAYS, form, label="current time moving (in days)")
+
+
+    plt.xlabel("particle")
+    plt.show()
+
+
+    if savefile is not None:
+        plt.savefig(savefile)
+        print "plotParticleInformation(): plot saved as '{}'".format(savefile)
+    if show:
+        print "plotParticleInformation(): showing plot"
         plt.show()
