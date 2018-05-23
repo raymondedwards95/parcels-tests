@@ -68,3 +68,40 @@ def deleteParticle(particle, fieldset, time, dt):
 def DeleteParticle(particle, fieldset, time, dt):
     """ For compatibility """
     return deleteParticle(particle, fieldset, time, dt)
+
+
+def sort_col(array, index=[0]):
+    """ Sort array by using columns
+    https://stackoverflow.com/a/2828371
+    """
+    if len(array.shape) != 2:
+        print "sort_col(): array is not 2d, returning unsorted array"
+        return array
+
+    num = array.shape[1]
+    shape = 'f' + (num-1)*',f'
+
+    type = array.dtype
+
+    ord = []
+    for i in index:
+        ord.append('f'+str(i))
+
+    return np.sort(array.view(shape), order=ord, axis=0).view(type)
+
+
+def main():
+    x = np.array([[2,2,2], [1,1,1], [3,3,3]])
+    y = sort_col(x, [1])
+    print x
+    print y
+    print
+
+    x = np.random.randint(0, 10, (5,5)).astype(np.float32)
+    y = sort_col(x, [1])
+    print x
+    print y
+
+
+if __name__ == '__main__':
+    main()
