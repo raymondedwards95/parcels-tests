@@ -564,7 +564,7 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
         plt.show()
 
 
-def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False, current=True, total=True, average=True, average_all=True, remove_zeros=False, sort=0, style="histogram", show=None, savefile=None):
+def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False, current=True, total=True, average=True, average_all=True, remove_zeros=False, sort=None, style="histogram", show=None, savefile=None):
     """ Show totals and/or currents of each particle
     coast: show coast-ocean values
     coast_number: show number_on_coast/number_in_ocean
@@ -658,10 +658,16 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
     subdata_ = np.array(subdata, dtype=np.object)
 
     if sort > 4:
-        print "plotParticleInformation(): 'sort' is too large, setting 'sort' to 0 ('id')"
+        print "plotParticleInformation(): 'sort' is too large, setting 'sort' to None"
         sort = 0
 
-    if sort == 0:
+    if sort is not None:
+        print "plotParticleInformation(): sort does not work, setting sort to None"
+        sort = None
+
+    if sort is None:
+        subdata_ = subdata
+    elif sort == 0:
         subdata_ = stg.sort_col(subdata_, [0])
     elif sort == 1:
         if coast:
@@ -693,7 +699,7 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
         elif style == 'dots':
             form = 'o'
         else:
-            form == 'o'
+            form = 'o'
 
         if ct:
             plt.plot(subdata_[:,-1]/DAYS, form, label="total time on coast (in days)")
@@ -716,8 +722,6 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
 
 
     plt.xlabel("particle")
-    plt.show()
-
 
     if savefile is not None:
         plt.savefig(savefile+".pdf")
