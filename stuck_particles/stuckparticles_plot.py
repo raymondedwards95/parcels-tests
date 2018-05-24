@@ -94,7 +94,8 @@ def plotVelocity(vector, field="vector", coords=None, show=None, savefile=None, 
     plt.yticks(lats)
     plt.grid()
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "plotVelocity(): plot saved as '{}'".format(savefile)
     if show:
         print "plotVelocity(): showing plot"
@@ -138,7 +139,8 @@ def plotAbsoluteVelocity(vector, coords=None, show=None, savefile=None, vmax=Non
     plt.colorbar()
     plt.grid()
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "plotAbsoluteVelocity(): plot saved as '{}'".format(savefile)
     if show:
         print "plotAbsoluteVelocity(): showing plot"
@@ -177,7 +179,8 @@ def showCoast(coastfields, coasttype=np.bool, show=None, savefile=None, field="a
     plt.colorbar()
     plt.grid()
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "showCoast(): plot saved as '{}'".format(savefile)
     if show:
         print "showCoast(): showing plot"
@@ -309,7 +312,8 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
     plt.title(title)
 
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "plotLocations(): plot saved as '{}'".format(savefile)
     if show:
         print "plotLocations(): showing plot"
@@ -373,7 +377,8 @@ def plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="
     plt.grid()
 
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "plotHistogram(): plot saved as '{}'".format(savefile)
     if show:
         print "plotHistogram(): showing plot"
@@ -427,7 +432,8 @@ def scatterParticleData(subdata, show=None, savefile=None, title="", filter="coa
 
 
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "scatterParticleData(): plot saved as '{}'".format(savefile)
     if show:
         print "scatterParticleData(): showing plot"
@@ -464,7 +470,8 @@ def plotCoasts(coasts, show=None, savefile=None):
 
 
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "plotCoasts(): plot saved as '{}'".format(savefile)
     if show:
         print "plotCoasts(): showing plot"
@@ -547,7 +554,8 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
         plt.quiver(lon_, lat_, field.U.data[0], field.V.data[0], color)
 
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "plotTrajectories(): plot saved as '{}'".format(savefile)
     if show:
         print "plotTrajectories(): showing plot"
@@ -710,7 +718,8 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
 
 
     if savefile is not None:
-        plt.savefig(savefile)
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
         print "plotParticleInformation(): plot saved as '{}'".format(savefile)
     if show:
         print "plotParticleInformation(): showing plot"
