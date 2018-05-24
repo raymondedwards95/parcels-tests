@@ -302,6 +302,8 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
             col = np.hypot(fieldU, fieldV)
             plt.quiver(lons, lats, fieldU, fieldV, col)
 
+        plt.colorbar()
+
     if fieldset is None:
         plt.grid()
 
