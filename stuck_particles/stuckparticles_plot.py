@@ -63,7 +63,7 @@ def plotVelocity(vector, field="vector", coords=None, show=None, savefile=None, 
     elif field == "absolute":
         vel = np.sqrt(np.power(U, 2) + np.power(V, 2))
     else:
-        print "plotVelocity(): parameter 'field' is incorrect. Expected 'U' or 'V'"
+        print "plotVelocity(): parameter 'field' is incorrect. Expected 'U' 'V', 'vector' or 'absolue'"
 
     if vmax is not None and type(vmax) == float:
         vmin = -vmax
