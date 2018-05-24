@@ -677,7 +677,7 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
 
     # plot
     plt.figure()
-    if style == ('histogram' or 'line' or 'dots')
+    if style == ('histogram' or 'line' or 'dots'):
         if style == 'line':
             form = '-o'
         elif style == 'dots':
