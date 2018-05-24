@@ -184,7 +184,7 @@ def showCoast(coastfields, coasttype=np.bool, show=None, savefile=None, field="a
         plt.show()
 
 
-def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool, filter_stuck=False, filter_coast=False):
+def plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool, filter_stuck=False, filter_coast=False, fieldset=None, fieldtype="vector"):
     """ Plot locations of particles in subdata or data from stuckparticles_analysis.
     Assuming that the first three values are (id, lon, lat).
     """
@@ -206,6 +206,21 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
 
         field = np.sqrt(np.square(field_coast_U) + np.square(field_coast_V))
         field = field.astype(coasttype)
+
+    if fieldset is not None:
+        fieldU = fieldset.U.data[0]
+        fieldV = fieldset.V.data[0]
+
+        if fieldtype == "U":
+            fieldvel = fieldU
+        elif fieldtype == "V":
+            fieldvel = fieldV
+        elif fieldtype == "vector":
+            pass
+        elif fieldtype == "absolute":
+            fieldvel = np.sqrt(np.power(fieldU, 2) + np.power(fieldV, 2))
+        else:
+            print "plotVelocity(): parameter 'fieldtype' is incorrect. Expected 'U' 'V', 'vector' or 'absolue'"
 
 
     filter = None
@@ -277,11 +292,20 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
         # plt.xlim([np.min(lons), np.max(lons)])
         # plt.ylim([np.max(lats), np.min(lats)])
 
-    plt.grid()
+    if fieldset is not None:
+        if fieldtype == "U" or fieldtype == "V" or fieldtype == "absolute":
+            plt.contourf(lons, lats, fieldvel)
+        elif fieldtype == "vector":
+            col = np.hypot(fieldU, fieldV)
+            plt.quiver(lons, lats, fieldU, fieldV, col)
+
+    if fieldset is None:
+        plt.grid()
+
     if legend:
         plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
-    plt.xlabel("longitude")
-    plt.ylabel("latitude")
+    plt.xlabel("longitude (degrees)")
+    plt.ylabel("latitude (degrees)")
     plt.title(title)
 
     if savefile is not None:
