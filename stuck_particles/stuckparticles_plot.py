@@ -730,3 +730,54 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
     if show:
         print "plotParticleInformation(): showing plot"
         plt.show()
+
+
+def plotFields(fieldset, fieldtype="vector", coast="F_all", show=None, savefile=None):
+    """ Plot fields (and coasts) in fieldset
+    set coast to None for no coasts
+    fieldtype: "vector", "absolute", "U", "V"
+    """
+    if savefile is None:
+        show = True
+    if show is None and savefile is not None:
+        show = False
+
+
+    fieldU = fieldset.U.data[0]
+    fieldV = fieldset.V.data[0]
+    lons = fieldset.U.grid.lon
+    lats = fieldset.U.grid.lat
+
+    if fieldtype == "U":
+        fieldvel = fieldU
+    elif fieldtype == "V":
+        fieldvel = fieldV
+    elif fieldtype == "vector":
+        pass
+    elif fieldtype == "absolute":
+        fieldvel = np.sqrt(np.power(fieldU, 2) + np.power(fieldV, 2))
+    else:
+        print "plotVelocity(): parameter 'fieldtype' is incorrect. Expected 'U' 'V', 'vector' or 'absolue'"
+
+
+    plt.figure()
+
+    if fieldtype == "U" or fieldtype == "V" or fieldtype == "absolute":
+        plt.contourf(lons, lats, fieldvel)
+    elif fieldtype == "vector":
+        col = np.hypot(fieldU, fieldV)
+        plt.quiver(lons, lats, fieldU, fieldV, col)
+
+    plt.xlabel("longitude (degrees)")
+    plt.ylabel("latitude (degrees)")
+    plt.colorbar()
+    plt.title("")
+
+
+    if savefile is not None:
+        plt.savefig(savefile+".pdf")
+        plt.savefig(savefile+".png")
+        print "plotFields(): plot saved as '{}'".format(savefile)
+    if show:
+        print "plotFields(): showing plot"
+        plt.show()
