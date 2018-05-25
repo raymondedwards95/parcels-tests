@@ -624,6 +624,8 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
         print "plotParticleInformation(): missing 'total_time' information. Exiting"
         return
 
+    ct = cta = cc = nc = st = sta = sc = False
+
     # finding data
     number = 1
     if coast:
@@ -666,29 +668,29 @@ def plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False
         sort = None
 
     if sort is None:
-        subdata_ = subdata
+        subdata_ = np.array(subdata, dtype=np.object)
     elif sort == 0:
-        subdata_ = stg.sort_col(subdata_, [0])
+        subdata_ = np.array(stg.sort_col(subdata_, [0]), dtype=np.object)
     elif sort == 1:
         if coast:
-            subdata_ = stg.sort_col(subdata_, [-1])
+            subdata_ = np.array(stg.sort_col(subdata_, [-1]), dtype=np.object)
         elif stuck:
-            subdata_ = stg.sort_col(subdata_, [6])
+            subdata_ = np.array(stg.sort_col(subdata_, [6]), dtype=np.object)
     elif sort == 2:
         if coast:
-            subdata_ = stg.sort_col(subdata_, [-2])
+            subdata_ = np.array(stg.sort_col(subdata_, [-2]), dtype=np.object)
         elif stuck:
-            subdata_ = stg.sort_col(subdata_, [7])
+            subdata_ = np.array(stg.sort_col(subdata_, [7]), dtype=np.object)
     elif sort == 3:
         if coast:
-            subdata_ = stg.sort_col(subdata_, [-3])
+            subdata_ = np.array(stg.sort_col(subdata_, [-3]), dtype=np.object)
         elif stuck:
-            subdata_ = stg.sort_col(subdata_, [8])
+            subdata_ = np.array(stg.sort_col(subdata_, [8]), dtype=np.object)
     elif sort == 4:
         if coast:
-            subdata_ = stg.sort_col(subdata_, [-4])
+            subdata_ = np.array(stg.sort_col(subdata_, [-4]), dtype=np.object)
         elif stuck:
-            subdata_ = stg.sort_col(subdata_, [9])
+            subdata_ = np.array(stg.sort_col(subdata_, [9]), dtype=np.object)
 
 
     # plot
