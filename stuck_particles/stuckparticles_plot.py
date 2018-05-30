@@ -15,6 +15,7 @@ plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=T
     FieldSet
 plotfunction: plotParticleInformation(subdata, coast=True, coast_number=False, stuck=False, current=True, total=True, average=True, average_all=True, remove_zeros=False, sort=0, style="histogram", show=None, savefile=None)
     stg.sort_col
+    stg.nearest_index
 """
 import stuckparticles_analysis as sta
 import stuckparticles_general as stg
@@ -551,9 +552,45 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
             lon_ = field.U.grid.lon
             lat_ = field.U.grid.lat
 
+        if domain is not None and domain != "auto" and len(domain) == 4:
+            [lon_low, lon_high, lat_low, lat_high] = domain
+
+            latN = stg.nearest_index(lat_, lat_high)
+            latS = stg.nearest_index(lat_, lat_low)
+            lonE = stg.nearest_index(lon_, lon_high)
+            lonW = stg.nearest_index(lon_, lon_low)
+        elif domain == "auto":
+            latN = stg.nearest_index(lat_, np.max(lat)+1)
+            latS = stg.nearest_index(lat_, np.min(lat)-1)
+            lonE = stg.nearest_index(lon_, np.max(lon)+1)
+            lonW = stg.nearest_index(lon_, np.min(lon)-1)
+        else:
+            print "plotTrajectories(): no (usable) domain specified"
+            latN = -1
+            latS = 0
+            lonE = -1
+            lonW = 0
+
+        plt.xlim(lon_[lonW], lon_[lonE])
+        plt.ylim(lat_[latS], lat_[latN])
+        lon_ = lon_[lonW:lonE]
+        lat_ = lat_[latS:latN]
+
         ### index [0] is probably wrong !!!
-        color = np.hypot(field.U.data[0], field.V.data[0])
-        plt.quiver(lon_, lat_, field.U.data[0], field.V.data[0], color)
+        U = field.U.data[0,latS:latN, lonW:lonE]
+        V = field.V.data[0,latS:latN, lonW:lonE]
+
+        if normalized:
+            U = U / np.sqrt(np.square(U) + np.square(V))
+            V = V / np.sqrt(np.square(U) + np.square(V))
+
+        # plot
+        color = np.hypot(U, V)
+        plt.quiver(lon_, lat_, U, V, color)
+
+        if grid:
+            mesh_x, mesh_y = np.meshgrid(lon_, lat_)
+            plt.plot(mesh_x.flatten(), mesh_y.flatten(), 'o', markersize=3, color="black")
 
     if savefile is not None:
         plt.savefig(savefile+".pdf")
