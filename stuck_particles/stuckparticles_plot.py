@@ -489,7 +489,7 @@ def plotCoasts(coasts, show=None, savefile=None):
 #     z = np.ma.filled(file.variables["z"], np.nan)
 
 
-def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field=None, coasts=None, show=None, savefile=None):
+def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field=None, coasts=None, show=None, savefile=None, domain="auto", normalized=True, grid=True):
     """ Plot trajectories of particles in a trajectories-file (*.nc)
     ### to do: filters
     """
