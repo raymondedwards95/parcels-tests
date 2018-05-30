@@ -8,6 +8,7 @@ kernelfunction: periodicBC(particle, fieldset, time, dt)
 kernelfunction: deleteParticle(particle, fieldset, time, dt)
 """
 import numpy as np
+import bisect
 
 
 def haversine(x, method=None):
@@ -90,6 +91,12 @@ def sort_col(array, index=[0]):
     return np.sort(array.view(shape), order=ord, axis=0).view(type)
 
 
+def nearest_index(a, x):
+    i = bisect.bisect(a, x)
+    if i == np.size(a): i -= 1
+    return i
+
+
 def main():
     x = np.array([[2,2,2], [1,1,1], [3,3,3]])
     y = sort_col(x, [1])
@@ -101,6 +108,9 @@ def main():
     y = sort_col(x, [1])
     print x
     print y
+
+    u = np.arange(0, 100, 2)
+    print nearest_index(u, 3)
 
 
 if __name__ == '__main__':
