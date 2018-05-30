@@ -9,7 +9,7 @@ plotfunction: showCoast(fields, type=np.bool, show=None, savefile=None, field="a
 plotfunction: plotLocations(subdata, title="", initial=False, show=None, savefile=None, coastfields=None, legend=False, coasttype=np.bool, filter_stuck=False, filter_coast=False)
 plotfunction: plotHistogram(subdata, width=1, show=None, savefile=None, title="", filter="coast")
 plotfunction: scatterParticleData(subdata, show=None, savefile=None, title="", filter="coast")
-plotfunction: plotCoast(coasts, show=None, savefile=None)
+plotfunction: plotCoasts(coasts, show=None, savefile=None)
 plotfunction: plotTrajectories(filename, ocean_particles=True, coast_particles=True, field=None, coasts=None, show=None, savefile=None)
     Field
     FieldSet
@@ -285,7 +285,10 @@ def plotLocations(subdata, title="", initial=False, show=None, savefile=None, co
             m = i%number # for random colors
 
 
-        plt.plot(subdata[i][4], subdata[i][5], "o", markersize=4, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][3]), subdata[i][4], subdata[i][5]))
+        if filter is not None and (m == 0 or m == 4):
+            plt.plot(subdata[i][4], subdata[i][5], "o", markersize=4, color=colors[m], label="Particle {} at ({:.1f}, {:.1f})".format(int(subdata[i][3]), subdata[i][4], subdata[i][5]))
+        else:
+            plt.plot(subdata[i][4], subdata[i][5], "o", markersize=4, color=colors[m])
 
         if initial and subdata[0][1] >= 5:
             plt.plot(subdata[i][10], subdata[i][11], "o", markersize=1, color=colors[m])
@@ -460,10 +463,10 @@ def plotCoasts(coasts, show=None, savefile=None):
     plt.figure()
 
     # should change to contourf
-    plt.contour(north[2].lon, north[2].lat, field_N)
-    plt.contour(south[2].lon, south[2].lat, field_S)
-    plt.contour(east[2].lon, east[2].lat, field_E)
-    plt.contour(west[2].lon, west[2].lat, field_W)
+    plt.contourf(north[2].lon, north[2].lat, field_N, "greys")
+    plt.contourf(south[2].lon, south[2].lat, field_S, "greys")
+    plt.contourf(east[2].lon, east[2].lat, field_E, "greys")
+    plt.contourf(west[2].lon, west[2].lat, field_W, "greys")
 
     plt.title("Locations of coasts")
     plt.xlabel("longitude")
@@ -506,7 +509,7 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
     z = np.ma.filled(file.variables["z"], np.nan)
 
     plt.figure()
-    plt.plot(np.transpose(lon), np.transpose(lat), "--")
+    plt.plot(np.transpose(lon)[:-1], np.transpose(lat)[:-1], "-o")
     plt.plot(np.transpose(lon)[-1], np.transpose(lat)[-1], "o")
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
@@ -514,7 +517,7 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
     if coasts is not None:
         if isinstance(coasts, Field):
             # coasts is a Field from a FieldSet
-            plt.contourf(coasts.grid.lon, coasts.grid.lat, coasts.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
+            plt.contourf(coasts.grid.lon, coasts.grid.lat, coasts.data[0].astype(np.bool), [0.4, 10.], alpha=0.5, cmap="Greys")
 
         elif isinstance(coasts, (list, np.ndarray)):
             if np.shape(np.array(coasts)) == (4, 3):
@@ -522,21 +525,21 @@ def plotTrajectories(filename, ocean_particles=True, coast_particles=True, field
                 [north, south, east, west] = coasts
 
                 # should change to contourf ?
-                plt.contour(north[2].lon, north[2].lat, north[1].astype(np.bool), alpha=0.5, cmap="Greys")
-                plt.contour(south[2].lon, south[2].lat, south[1].astype(np.bool), alpha=0.5, cmap="Greys")
-                plt.contour(east[2].lon, east[2].lat, east[1].astype(np.bool), alpha=0.5, cmap="Greys")
-                plt.contour(west[2].lon, west[2].lat, west[1].astype(np.bool), alpha=0.5, cmap="Greys")
+                plt.contourf(north[2].lon, north[2].lat, north[1].astype(np.bool), [0.4, 10.], alpha=0.5, cmap="Greys")
+                plt.contourf(south[2].lon, south[2].lat, south[1].astype(np.bool), [0.4, 10.], alpha=0.5, cmap="Greys")
+                plt.contourf(east[2].lon, east[2].lat, east[1].astype(np.bool), [0.4, 10.], alpha=0.5, cmap="Greys")
+                plt.contourf(west[2].lon, west[2].lat, west[1].astype(np.bool), [0.4, 10.], alpha=0.5, cmap="Greys")
 
             else:
                 # coasts is a list of Fields from a FieldSet
                 for field in coasts:
-                    plt.contourf(field.grid.lon, field.grid.lat, field.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
+                    plt.contourf(field.grid.lon, field.grid.lat, field.data[0].astype(np.bool), [0.4, 10.], alpha=0.5, cmap="Greys")
 
         elif isinstance(coasts, FieldSet):
             # coasts is a FieldSet
             try:
                 coasts.F_all
-                plt.contourf(coasts.F_all.grid.lon, coasts.F_all.grid.lat, coasts.F_all.data[0].astype(np.bool), alpha=0.5, cmap="Greys")
+                plt.contourf(coasts.F_all.grid.lon, coasts.F_all.grid.lat, coasts.F_all.data[0].astype(np.bool), [0.4, 10.], alpha=0.5, cmap="Greys")
             except NameError:
                 print "plotTrajectories(): cannot find coastfields (F_all) in parameter 'coast'"
 
