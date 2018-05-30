@@ -6,6 +6,9 @@ function: globalDistance(p1, p2)
 function: absolute(x, bool=True)
 kernelfunction: periodicBC(particle, fieldset, time, dt)
 kernelfunction: deleteParticle(particle, fieldset, time, dt)
+function: sort_col(array, index=[0])
+function: nearest_index(array, x)
+    bisect.bisect
 """
 import numpy as np
 import bisect
