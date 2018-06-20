@@ -463,10 +463,10 @@ def plotCoasts(coasts, show=None, savefile=None):
     plt.figure()
 
     # should change to contourf
-    plt.contourf(north[2].lon, north[2].lat, field_N, "greys")
-    plt.contourf(south[2].lon, south[2].lat, field_S, "greys")
-    plt.contourf(east[2].lon, east[2].lat, field_E, "greys")
-    plt.contourf(west[2].lon, west[2].lat, field_W, "greys")
+    plt.contourf(north[2].lon, north[2].lat, field_N, [0.4, 10.], "greys")
+    plt.contourf(south[2].lon, south[2].lat, field_S, [0.4, 10.], "greys")
+    plt.contourf(east[2].lon, east[2].lat, field_E, [0.4, 10.], "greys")
+    plt.contourf(west[2].lon, west[2].lat, field_W, [0.4, 10.], "greys")
 
     plt.title("Locations of coasts")
     plt.xlabel("longitude")
