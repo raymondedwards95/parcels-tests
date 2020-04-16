@@ -421,4 +421,4 @@ def filterCoastParticles(subdata, current_time_coast=None, current_time_ocean=No
     return (list_a, list_b)
 
 
-### [level, bool:StuckParticle, bool:CoastParticle, id, lon, lat, total_time_stuck, total_time_moving, current_time_stuck, current_time_moving, init_lon, init_lat, init_time, number_in_ocean, number_on_coast, current_time_ocean, current_time_coast, total_time_ocean, total_time_coast]
+##### [level, bool:StuckParticle, bool:CoastParticle, id, lon, lat, total_time_stuck, total_time_moving, current_time_stuck, current_time_moving, init_lon, init_lat, init_time, number_in_ocean, number_on_coast, current_time_ocean, current_time_coast, total_time_ocean, total_time_coast]
